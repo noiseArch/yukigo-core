@@ -1,14 +1,12 @@
 import {
-  ApplicationExpression,
+  Application,
   CompositionExpression,
-  FunctionDeclaration,
-  FunctionGroup,
-  FunctionTypeSignature,
   InfixApplicationExpression,
-  LambdaExpression,
-  TypeAlias,
-  TypeNode,
-} from "./paradigms/functional.js";
+  Lambda,
+} from "../paradigms/functional.js";
+import { BaseOperator } from "./operators.js";
+import { Pattern } from "./patterns.js";
+import { Type, TypeAlias, TypeSignature } from "./types.js";
 
 export type Modify<T, R> = Omit<T, keyof R> & R;
 
@@ -19,9 +17,11 @@ export type YukigoPrimitive =
   | "YuString"
   | "YuChar"
   | "YuBoolean"
+  | "YuTuple"
   | "YuList"
-  | "YuNull"
-  | "YuUndefined"
+  | "YuNil"
+  | "YuDict"
+  | "YuObject"
   | "YuSymbol";
 
 export type PrimitiveValue =
@@ -40,7 +40,6 @@ export type PrimitiveValue =
 export interface BasePrimitive {
   type: YukigoPrimitive;
   value: PrimitiveValue | PrimitiveValue[];
-  loc: SourceLocation;
 }
 
 export interface NumberPrimitive extends BasePrimitive {
@@ -63,14 +62,9 @@ export interface StringPrimitive extends BasePrimitive {
   value: string;
 }
 
-export interface NullPrimitive extends BasePrimitive {
-  type: "YuNull";
-  value: null;
-}
-
-export interface UndefinedPrimitive extends BasePrimitive {
-  type: "YuUndefined";
-  value: undefined;
+export interface NilPrimitive extends BasePrimitive {
+  type: "YuNil";
+  value: undefined | null;
 }
 
 export interface SymbolPrimitive extends BasePrimitive {
@@ -82,7 +76,6 @@ export interface SymbolPrimitive extends BasePrimitive {
 export interface ListPrimitive {
   type: "YuList";
   elements: Expression[];
-  loc: SourceLocation;
 }
 
 export type Primitive =
@@ -90,8 +83,7 @@ export type Primitive =
   | BooleanPrimitive
   | CharPrimitive
   | StringPrimitive
-  | NullPrimitive
-  | UndefinedPrimitive
+  | NilPrimitive
   | SymbolPrimitive
   | ListPrimitive;
 
@@ -116,62 +108,70 @@ export interface Position {
  */
 export interface BaseOperation {
   type: string;
-  operator: string;
+  operator: BaseOperator;
   right: Expression;
   left: Expression;
-  loc: SourceLocation;
 }
 
+export type ArithmeticOperatorType =
+  | "Plus"
+  | "Minus"
+  | "Multiply"
+  | "Divide"
+  | "Modulo"
+  | "Power";
 export interface ArithmeticOperation extends BaseOperation {
   type: "Arithmetic";
-  operator: "+" | "-" | "*" | "/" | "%" | "**";
+  operator: BaseOperator & { type: ArithmeticOperatorType };
 }
+
+export type ComparisonOperatorType =
+  | "Equal"
+  | "NotEqual"
+  | "Similar"
+  | "NotSimilar"
+  | "GreaterOrEqualThan"
+  | "GreaterThan"
+  | "LessOrEqualThan"
+  | "LessThan";
 
 export interface ComparisonOperation extends BaseOperation {
   type: "Comparison";
-  operator: "==" | "!=" | "===" | "!==" | "<" | ">" | "<=" | ">=";
+  operator: BaseOperator & { type: ComparisonOperatorType };
 }
 
+export type LogicalOperatorType = "And" | "Or" | "Negation";
 export interface LogicalOperation extends BaseOperation {
-  type: "logical";
-  operator: "&&" | "||" | "??";
+  type: "Logical";
+  operator: BaseOperator & { type: LogicalOperatorType };
 }
+
+export type BitwiseOperatorType =
+  | "BitwiseOr"
+  | "BitwiseAnd"
+  | "BitwiseLeftShift"
+  | "BitwiseRightShift"
+  | "BitwiseNot"
+  | "BitwiseUnsignedRightShift"
+  | "BitwiseXor";
 
 export interface BitwiseOperation extends BaseOperation {
-  type: "bitwise";
-  operator: "&" | "|" | "^" | "~" | "<<" | ">>" | ">>>";
+  type: "Bitwise";
+  operator: BaseOperator & { type: BitwiseOperatorType };
 }
+export type StringOperatorType = "Concat";
 
-export interface TransformOperation {
-  type: "Transform";
-  operator: "map";
-  function: Expression;
-  list: Expression;
-  loc: SourceLocation;
+export interface StringOperation extends BaseOperation {
+  type: "String";
+  operator: BaseOperator & { type: StringOperatorType };
 }
-export interface SelectOperation {
-  type: "Select";
-  operator: "filter";
-  function: Expression;
-  list: Expression;
-  loc: SourceLocation;
-}
-
-export interface ConcatOperation {
-  type: "Concat";
-  operator: string;
-  left: Expression;
-  right: Expression;
-}
-
-export type StringOperation = ConcatOperation;
 
 export type Operation =
   | ArithmeticOperation
+  | StringOperation
   | ComparisonOperation
   | LogicalOperation
-  | BitwiseOperation
-  | StringOperation;
+  | BitwiseOperation;
 
 // Collections
 
@@ -181,7 +181,6 @@ export type Operation =
 export interface BaseCollection {
   type: string;
   elements: Expression[];
-  loc: SourceLocation;
 }
 
 export interface ArrayCollection extends BaseCollection {
@@ -196,7 +195,6 @@ export interface SetCollection extends BaseCollection {
 export interface MapCollection {
   type: "map";
   entries: MapEntry[];
-  loc: SourceLocation;
 }
 export interface MapEntry {
   key: Expression;
@@ -227,8 +225,8 @@ export interface ConsExpression {
   tail: Expression;
 }
 
-export interface ControlFlowConditional {
-  type: "IfThenElse";
+export interface If {
+  type: "If";
   condition: Expression;
   then: Expression;
   else: Expression;
@@ -238,12 +236,12 @@ export type BodyExpression =
   | Primitive
   | Operation
   | TupleExpression
-  | ControlFlowConditional
+  | If
   | ConsExpression
   | DataExpression
   | CompositionExpression
-  | LambdaExpression
-  | ApplicationExpression
+  | Lambda
+  | Application
   | InfixApplicationExpression;
 
 export type Expression = {
@@ -254,7 +252,7 @@ export type Expression = {
 export interface Field {
   type: "Field";
   name: SymbolPrimitive | undefined;
-  value: TypeNode;
+  value: Type;
 }
 
 export interface Constructor {
@@ -268,12 +266,107 @@ export interface Record {
   contents: Constructor[];
 }
 
-export type AST = (TypeAlias | FunctionTypeSignature | FunctionDeclaration)[];
-export type ASTGrouped = (TypeAlias | FunctionTypeSignature | FunctionGroup)[];
+export interface UnguardedBody {
+  type: "UnguardedBody";
+  expression: Expression;
+}
+
+export interface GuardedBody {
+  type: "GuardedBody";
+  condition: Expression;
+  body: Expression;
+}
+
+export interface Equation {
+  type: "Equation";
+  patterns: Pattern[];
+  body: UnguardedBody | GuardedBody[];
+}
+
+export interface Function {
+  type: "Function";
+  identifier: SymbolPrimitive;
+  equations: Equation[];
+}
+
+export type AST = (TypeAlias | TypeSignature | Function)[];
 
 export interface YukigoParser {
-  errors?: string[]
-  parse: (code: string) => ASTGrouped;
+  errors?: string[];
+  parse: (code: string) => AST;
+}
+export interface Match {
+  type: "Match";
+  condition: Expression;
+  body: Equation[];
+}
+export interface Switch {
+  type: "Switch";
+  value: Expression;
+  cases: {
+    condition: Expression;
+    body: Expression;
+  }[];
+  default: Expression;
+}
+export interface Try {
+  type: "Try";
+  body: Expression;
+  catch: {
+    patterns: Pattern;
+    body: Expression;
+  }[];
+  finally: Expression;
+}
+export interface Raise {
+  type: "Raise";
+  body: Expression;
+}
+export interface Print {
+  type: "Print";
+  expression: Expression;
+}
+
+export interface Statement {
+  pattern: Pattern;
+  expression: Expression;
+}
+
+export interface For {
+  type: "For";
+  statements: Statement[];
+  body: Expression;
+}
+export interface Break {
+  type: "Break";
+  body: Expression;
+}
+export interface Continue {
+  type: "Continue";
+  body: Expression;
+}
+export interface Sequence {
+  type: "Sequence";
+  expressions: Expression[];
+}
+export interface Arrow {
+  type: "Arrow";
+  expression1: Expression[];
+  expression2: Expression[];
+}
+
+export interface PrimitiveMethod {
+  operator: BaseOperator;
+  equations: Equation[];
+}
+export interface Variable {
+  identifier: SymbolPrimitive;
+  expression: Expression;
+}
+
+export interface Assignment {
+  identifier: SymbolPrimitive;
+  expression: Expression;
 }
 
 type Visitor = {
@@ -282,17 +375,27 @@ type Visitor = {
 
 export function traverse(node: any, visitor: Visitor, parent?: any) {
   if (!node || typeof node !== "object") return;
-  if (node.type && visitor[node.type]) {
-    visitor[node.type](node, parent);
+  
+  // multi-key visitors (comma-separated types)
+  if (node.type) {
+    for (const key in visitor) {
+      if (key === "*") continue;
+      const types = key.split(",").map(t => t.trim());
+      if (types.includes(node.type)) {
+        visitor[key](node, parent);
+      }
+    }
   }
+
   if (visitor["*"]) {
     visitor["*"](node, parent);
   }
+  
   for (const key in node) {
     if (key === "type") continue;
     const child = node[key];
     if (Array.isArray(child)) {
-      child.forEach((c) => traverse(c, visitor, node));
+      child.forEach(c => traverse(c, visitor, node));
     } else if (typeof child === "object" && child !== null) {
       traverse(child, visitor, node);
     }
