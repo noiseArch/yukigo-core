@@ -1,9 +1,11 @@
 import { Expression, Primitive, SymbolPrimitive } from "../globals/generics.js";
 import { Pattern } from "../globals/patterns.js";
 
+export type Clause = Rule | Fact | Query | Primitive;
+
 export interface Program {
   type: "Program";
-  clauses: (Rule | Fact | Query | Primitive)[]
+  clauses: Clause[];
 }
 
 export interface Rule {

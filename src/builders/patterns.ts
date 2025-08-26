@@ -69,5 +69,5 @@ export function tuplePattern(elements: Pattern[]): TuplePattern {
   return {
     type: "TuplePattern",
     elements,
-  }
+  };
 }

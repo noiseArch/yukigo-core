@@ -120,6 +120,20 @@ export interface BaseOperation {
   right: Expression;
   left: Expression;
 }
+export interface UnaryOperation {
+  type: string;
+  operator: Operator;
+  operand: Expression;
+}
+
+
+export type ArithmeticUnaryOperator = "Round"
+
+export interface ArithmeticUnaryOperation extends UnaryOperation {
+  type: "ArithmeticUnaryOperation";
+  operator: ArithmeticUnaryOperator;
+}
+
 
 export type ArithmeticOperatorType =
   | "Plus"
@@ -191,6 +205,7 @@ export interface AssignOperation extends BaseOperation {
 
 export type Operation =
   | ArithmeticOperation
+  | ArithmeticUnaryOperation
   | StringOperation
   | ComparisonOperation
   | LogicalOperation
