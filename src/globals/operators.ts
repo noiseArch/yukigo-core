@@ -1,9 +1,4 @@
-export interface BaseOperator {
-  type: OperatorType;
-  operator: string;
-}
-
-export type OperatorType =
+export type Operator =
   | "Equal"
   | "NotEqual"
   | "Similar"
@@ -13,6 +8,8 @@ export type OperatorType =
   | "Negation"
   | "And"
   | "Or"
+  | "Unify"
+  | "Assign"
   | "Hash"
   | "GreaterOrEqualThan"
   | "GreaterThan"

@@ -7,7 +7,7 @@ export interface VariablePattern {
 
 export interface LiteralPattern {
   type: "LiteralPattern";
-  name: NumberPrimitive | CharPrimitive | StringPrimitive | BooleanPrimitive;
+  name: SymbolPrimitive | NumberPrimitive | CharPrimitive | StringPrimitive | BooleanPrimitive;
 }
 export interface InfixApplicationPattern {
   type: "InfixApplicationPattern";
@@ -68,9 +68,12 @@ export interface ConsPattern {
 export type Pattern =
   | VariablePattern
   | LiteralPattern
+  | InfixApplicationPattern
+  | ApplicationPattern
+  | TuplePattern
+  | ListPattern
+  | FunctorPattern
+  | AsPattern
   | WildcardPattern
   | ConstructorPattern
-  | ListPattern
   | ConsPattern
-  | AsPattern
-  | TuplePattern;

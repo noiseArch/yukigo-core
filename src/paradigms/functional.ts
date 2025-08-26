@@ -10,13 +10,13 @@ import { Pattern } from "../globals/patterns.js";
 export interface FunctionExpression {
   type: "FunctionExpression";
   name: SymbolPrimitive;
-  parameters: SymbolPrimitive[];
+  parameters: Expression[];
 }
 
 export interface CompositionExpression {
   type: "CompositionExpression";
-  left: SymbolPrimitive;
-  right: SymbolPrimitive;
+  left: Expression;
+  right: Expression;
 }
 
 export interface Lambda {
@@ -45,4 +45,15 @@ export interface Application {
   type: "Application";
   function: Expression;
   parameter: Expression | BodyExpression;
+}
+
+export function application(
+  func: Expression,
+  parameter: Expression
+): Application {
+  return {
+    type: "Application",
+    function: func,
+    parameter,
+  };
 }

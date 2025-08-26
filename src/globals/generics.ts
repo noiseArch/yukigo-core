@@ -4,7 +4,15 @@ import {
   InfixApplicationExpression,
   Lambda,
 } from "../paradigms/functional.js";
-import { BaseOperator } from "./operators.js";
+import {
+  Exist,
+  Findall,
+  Forall,
+  GoalExpression,
+  Not,
+  Program,
+} from "../paradigms/logic.js";
+import { Operator } from "./operators.js";
 import { Pattern } from "./patterns.js";
 import { Type, TypeAlias, TypeSignature } from "./types.js";
 
@@ -108,7 +116,7 @@ export interface Position {
  */
 export interface BaseOperation {
   type: string;
-  operator: BaseOperator;
+  operator: Operator;
   right: Expression;
   left: Expression;
 }
@@ -121,13 +129,15 @@ export type ArithmeticOperatorType =
   | "Modulo"
   | "Power";
 export interface ArithmeticOperation extends BaseOperation {
-  type: "Arithmetic";
-  operator: BaseOperator & { type: ArithmeticOperatorType };
+  type: "ArithmeticOperation";
+  operator: ArithmeticOperatorType;
 }
 
 export type ComparisonOperatorType =
   | "Equal"
   | "NotEqual"
+  | "Same"
+  | "NotSame"
   | "Similar"
   | "NotSimilar"
   | "GreaterOrEqualThan"
@@ -136,14 +146,14 @@ export type ComparisonOperatorType =
   | "LessThan";
 
 export interface ComparisonOperation extends BaseOperation {
-  type: "Comparison";
-  operator: BaseOperator & { type: ComparisonOperatorType };
+  type: "ComparisonOperation";
+  operator: ComparisonOperatorType;
 }
 
 export type LogicalOperatorType = "And" | "Or" | "Negation";
 export interface LogicalOperation extends BaseOperation {
-  type: "Logical";
-  operator: BaseOperator & { type: LogicalOperatorType };
+  type: "LogicalOperation";
+  operator: LogicalOperatorType;
 }
 
 export type BitwiseOperatorType =
@@ -156,14 +166,27 @@ export type BitwiseOperatorType =
   | "BitwiseXor";
 
 export interface BitwiseOperation extends BaseOperation {
-  type: "Bitwise";
-  operator: BaseOperator & { type: BitwiseOperatorType };
+  type: "BitwiseOperation";
+  operator: BitwiseOperatorType;
 }
 export type StringOperatorType = "Concat";
 
 export interface StringOperation extends BaseOperation {
-  type: "String";
-  operator: BaseOperator & { type: StringOperatorType };
+  type: "StringOperation";
+  operator: StringOperatorType;
+}
+export type UnifyOperatorType = "Unify";
+
+export interface UnifyOperation extends BaseOperation {
+  type: "UnifyOperation";
+  operator: UnifyOperatorType;
+}
+
+export type AssignOperatorType = "Assign";
+
+export interface AssignOperation extends BaseOperation {
+  type: "AssignOperation";
+  operator: AssignOperatorType;
 }
 
 export type Operation =
@@ -171,6 +194,8 @@ export type Operation =
   | StringOperation
   | ComparisonOperation
   | LogicalOperation
+  | UnifyOperation
+  | AssignOperation
   | BitwiseOperation;
 
 // Collections
@@ -242,7 +267,11 @@ export type BodyExpression =
   | CompositionExpression
   | Lambda
   | Application
-  | InfixApplicationExpression;
+  | InfixApplicationExpression
+  | Exist
+  | Forall
+  | Findall
+  | Not;
 
 export type Expression = {
   type: "Expression";
@@ -289,7 +318,7 @@ export interface Function {
   equations: Equation[];
 }
 
-export type AST = (TypeAlias | TypeSignature | Function)[];
+export type AST = (TypeAlias | TypeSignature | Function | Program)[];
 
 export interface YukigoParser {
   errors?: string[];
@@ -356,10 +385,12 @@ export interface Arrow {
 }
 
 export interface PrimitiveMethod {
-  operator: BaseOperator;
+  type: "PrimitiveMethod";
+  operator: Operator;
   equations: Equation[];
 }
 export interface Variable {
+  type: "Variable";
   identifier: SymbolPrimitive;
   expression: Expression;
 }
@@ -367,37 +398,4 @@ export interface Variable {
 export interface Assignment {
   identifier: SymbolPrimitive;
   expression: Expression;
-}
-
-type Visitor = {
-  [nodeType: string]: (node: any, parent?: any) => void;
-};
-
-export function traverse(node: any, visitor: Visitor, parent?: any) {
-  if (!node || typeof node !== "object") return;
-  
-  // multi-key visitors (comma-separated types)
-  if (node.type) {
-    for (const key in visitor) {
-      if (key === "*") continue;
-      const types = key.split(",").map(t => t.trim());
-      if (types.includes(node.type)) {
-        visitor[key](node, parent);
-      }
-    }
-  }
-
-  if (visitor["*"]) {
-    visitor["*"](node, parent);
-  }
-  
-  for (const key in node) {
-    if (key === "type") continue;
-    const child = node[key];
-    if (Array.isArray(child)) {
-      child.forEach(c => traverse(c, visitor, node));
-    } else if (typeof child === "object" && child !== null) {
-      traverse(child, visitor, node);
-    }
-  }
 }
