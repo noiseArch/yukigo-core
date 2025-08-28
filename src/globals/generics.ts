@@ -14,7 +14,7 @@ import {
 } from "../paradigms/logic.js";
 import { Operator } from "./operators.js";
 import { Pattern } from "./patterns.js";
-import { Type, TypeAlias, TypeSignature } from "./types.js";
+import { Type, TypeAlias, TypeCast, TypeSignature } from "./types.js";
 
 export type Modify<T, R> = Omit<T, keyof R> & R;
 
@@ -286,7 +286,8 @@ export type BodyExpression =
   | Exist
   | Forall
   | Findall
-  | Not;
+  | Not
+  | TypeCast;
 
 export type Expression = {
   type: "Expression";

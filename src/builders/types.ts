@@ -1,3 +1,4 @@
+import { Expression } from "../globals/generics.js";
 import {
   Constraint,
   ListType,
@@ -5,28 +6,35 @@ import {
   TupleType,
   Type,
   TypeAlias,
+  TypeApplication,
+  TypeCast,
   TypeSignature,
 } from "../globals/types.js";
 import { symbolPrimitive } from "./primitives.js";
 
-export const typeCon = (name: string): Type => ({
+export const typeCon = (name: string, constraints: Constraint[]): Type => ({
   type: "SimpleType",
   value: name,
-  constraints: [],
+  constraints,
+});
+export const typeApplication = (func: Type, arg: Type): TypeApplication => ({
+  type: "TypeApplication",
+  function: func,
+  argument: arg,
 });
 
-export function listType(type: Type): ListType {
+export function listType(type: Type, constraints: Constraint[]): ListType {
   return {
     type: "ListType",
     values: type,
-    constraints: [],
+    constraints,
   };
 }
-export function tupleType(type: Type[]): TupleType {
+export function tupleType(type: Type[], constraints: Constraint[]): TupleType {
   return {
     type: "TupleType",
     values: type,
-    constraints: [],
+    constraints,
   };
 }
 
@@ -76,4 +84,10 @@ export const typeSig = (
     return: output,
     constraints,
   },
+});
+
+export const typeCast = (body: Type, expression: Expression): TypeCast => ({
+  type: "TypeCast",
+  expression,
+  body,
 });

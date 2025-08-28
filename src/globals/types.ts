@@ -1,6 +1,13 @@
 import { Expression, SymbolPrimitive } from "./generics.js";
 
-export type Type = SimpleType | TypeVar | ListType | TupleType | ParameterizedType | ConstrainedType;
+export type Type =
+  | SimpleType
+  | TypeVar
+  | ListType
+  | TypeApplication
+  | TupleType
+  | ParameterizedType
+  | ConstrainedType;
 
 export interface SimpleType {
   type: "SimpleType";
@@ -11,6 +18,11 @@ export interface TypeVar {
   type: "TypeVar";
   value: string;
   constraints: Constraint[];
+}
+export interface TypeApplication {
+  type: "TypeApplication";
+  function: Type;
+  argument: Type;
 }
 export interface ListType {
   type: "ListType";
@@ -26,7 +38,7 @@ export interface TupleType {
 export interface Constraint {
   type: "Constraint";
   name: string;
-  parameters: Type[]
+  parameters: Type[];
 }
 
 export interface ParameterizedType {
@@ -43,7 +55,7 @@ export type ConstrainedType = {
 export interface TypeAlias {
   type: "TypeAlias";
   identifier: SymbolPrimitive;
-  variables: string[]
+  variables: string[];
   value: Type;
 }
 
