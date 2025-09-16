@@ -3,11 +3,6 @@ import { Pattern } from "../globals/patterns.js";
 
 export type Clause = Rule | Fact | Query | Primitive;
 
-export interface Program {
-  type: "Program";
-  clauses: Clause[];
-}
-
 export interface Rule {
   type: "Rule";
   identifier: SymbolPrimitive;

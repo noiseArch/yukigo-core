@@ -5,14 +5,15 @@ import {
   Lambda,
 } from "../paradigms/functional.js";
 import {
-  Exist,
-  Findall,
-  Forall,
-  GoalExpression,
-  Not,
-  Program,
-} from "../paradigms/logic.js";
-import { Operator } from "./operators.js";
+  EntryPoint,
+  Enumeration,
+  ForLoop,
+  Procedure,
+  While,
+} from "../paradigms/imperative.js";
+import { Clause, Exist, Findall, Forall, Not } from "../paradigms/logic.js";
+import { Class, Interface, Object } from "../paradigms/object.js";
+import { Operator, Operation } from "./operators.js";
 import { Pattern } from "./patterns.js";
 import { Type, TypeAlias, TypeCast, TypeSignature } from "./types.js";
 
@@ -109,110 +110,6 @@ export interface Position {
   offset: number;
 }
 
-// Operators
-
-/**
- * Base interface for all operations
- */
-export interface BaseOperation {
-  type: string;
-  operator: Operator;
-  right: Expression;
-  left: Expression;
-}
-export interface UnaryOperation {
-  type: string;
-  operator: Operator;
-  operand: Expression;
-}
-
-
-export type ArithmeticUnaryOperator = "Round"
-
-export interface ArithmeticUnaryOperation extends UnaryOperation {
-  type: "ArithmeticUnaryOperation";
-  operator: ArithmeticUnaryOperator;
-}
-
-
-export type ArithmeticOperatorType =
-  | "Plus"
-  | "Minus"
-  | "Multiply"
-  | "Divide"
-  | "Modulo"
-  | "Power";
-export interface ArithmeticOperation extends BaseOperation {
-  type: "ArithmeticOperation";
-  operator: ArithmeticOperatorType;
-}
-
-export type ComparisonOperatorType =
-  | "Equal"
-  | "NotEqual"
-  | "Same"
-  | "NotSame"
-  | "Similar"
-  | "NotSimilar"
-  | "GreaterOrEqualThan"
-  | "GreaterThan"
-  | "LessOrEqualThan"
-  | "LessThan";
-
-export interface ComparisonOperation extends BaseOperation {
-  type: "ComparisonOperation";
-  operator: ComparisonOperatorType;
-}
-
-export type LogicalOperatorType = "And" | "Or" | "Negation";
-export interface LogicalOperation extends BaseOperation {
-  type: "LogicalOperation";
-  operator: LogicalOperatorType;
-}
-
-export type BitwiseOperatorType =
-  | "BitwiseOr"
-  | "BitwiseAnd"
-  | "BitwiseLeftShift"
-  | "BitwiseRightShift"
-  | "BitwiseNot"
-  | "BitwiseUnsignedRightShift"
-  | "BitwiseXor";
-
-export interface BitwiseOperation extends BaseOperation {
-  type: "BitwiseOperation";
-  operator: BitwiseOperatorType;
-}
-export type StringOperatorType = "Concat";
-
-export interface StringOperation extends BaseOperation {
-  type: "StringOperation";
-  operator: StringOperatorType;
-}
-export type UnifyOperatorType = "Unify";
-
-export interface UnifyOperation extends BaseOperation {
-  type: "UnifyOperation";
-  operator: UnifyOperatorType;
-}
-
-export type AssignOperatorType = "Assign";
-
-export interface AssignOperation extends BaseOperation {
-  type: "AssignOperation";
-  operator: AssignOperatorType;
-}
-
-export type Operation =
-  | ArithmeticOperation
-  | ArithmeticUnaryOperation
-  | StringOperation
-  | ComparisonOperation
-  | LogicalOperation
-  | UnifyOperation
-  | AssignOperation
-  | BitwiseOperation;
-
 // Collections
 
 /**
@@ -265,6 +162,12 @@ export interface ConsExpression {
   tail: Expression;
 }
 
+export interface LetInExpression {
+  type: "LetInExpression";
+  declarations: Expression;
+  expression: Expression;
+}
+
 export interface If {
   type: "If";
   condition: Expression;
@@ -277,6 +180,7 @@ export type BodyExpression =
   | Operation
   | TupleExpression
   | If
+  | Print
   | ConsExpression
   | DataExpression
   | CompositionExpression
@@ -301,6 +205,7 @@ export interface Field {
 }
 
 export interface Constructor {
+  type: "Constructor"
   name: string;
   fields: Field[];
 }
@@ -334,7 +239,23 @@ export interface Function {
   equations: Equation[];
 }
 
-export type AST = (TypeAlias | TypeSignature | Function | Program)[];
+export type Statement =
+  | Function
+  | Clause
+  | Procedure
+  | TypeAlias
+  | TypeSignature
+  | Class
+  | Object
+  | Interface
+  | Enumeration
+  | Assignment
+  | Record
+  | If
+  | ForLoop
+  | While;
+
+export type AST = Statement[];
 
 export interface YukigoParser {
   errors?: string[];
@@ -372,10 +293,10 @@ export interface Print {
   expression: Expression;
 }
 
-export interface Statement {
-  pattern: Pattern;
-  expression: Expression;
-}
+// export interface Statement {
+//   pattern: Pattern;
+//   expression: Expression;
+// }
 
 export interface For {
   type: "For";
@@ -412,6 +333,7 @@ export interface Variable {
 }
 
 export interface Assignment {
+  type: "Assignment";
   identifier: SymbolPrimitive;
   expression: Expression;
 }

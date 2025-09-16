@@ -1,14 +1,33 @@
-import { AST, For, PrimitiveMethod, Record as RecordNode } from "./generics.js";
 import {
-  ArithmeticOperation,
-  AssignOperation,
-  ComparisonOperation,
-  UnifyOperation,
+  AST,
+  For,
+  PrimitiveMethod,
+  Record as RecordNode,
+  YukigoPrimitive,
   Expression,
-  BaseOperation,
+  BodyExpression,
+  Function,
+  SymbolPrimitive,
+  Equation,
+  GuardedBody,
+  UnguardedBody,
+  Variable,
 } from "./generics.js";
-import { Application, CompositionExpression, InfixApplicationExpression, Lambda, Yield } from "../paradigms/functional.js";
-import { EntryPoint, Enumeration, ForLoop, Procedure, Repeat, While } from "../paradigms/imperative.js";
+import {
+  Application,
+  CompositionExpression,
+  InfixApplicationExpression,
+  Lambda,
+  Yield,
+} from "../paradigms/functional.js";
+import {
+  EntryPoint,
+  Enumeration,
+  ForLoop,
+  Procedure,
+  Repeat,
+  While,
+} from "../paradigms/imperative.js";
 import {
   Attribute,
   Class,
@@ -19,7 +38,16 @@ import {
   Object,
   Send,
 } from "../paradigms/object.js";
-import { Exist, Fact, Findall, Forall, GoalExpression, Not, Program, Query, Rule } from "../paradigms/logic.js";
+import {
+  Exist,
+  Fact,
+  Findall,
+  Forall,
+  GoalExpression,
+  Not,
+  Query,
+  Rule,
+} from "../paradigms/logic.js";
 import {
   ApplicationPattern,
   AsPattern,
@@ -35,18 +63,33 @@ import {
   VariablePattern,
   WildcardPattern,
 } from "./patterns.js";
-import { ParameterizedType, SimpleType, TupleType, Type, TypeAlias, TypeCast, TypeSignature } from "./types.js";
+import {
+  ParameterizedType,
+  SimpleType,
+  TupleType,
+  Type,
+  TypeAlias,
+  TypeCast,
+  TypeSignature,
+} from "./types.js";
+import {
+  ArithmeticBinaryOperation,
+  AssignOperation,
+  BinaryOperation,
+  ComparisonOperation,
+  UnifyOperation,
+} from "./operators.js";
 
 export type NodeType =
   | AST[number]
   | Procedure
   | Expression
   | Pattern
+  | Variable
   | PrimitiveMethod
   | Type
   | Include
-  | BaseOperation
-  | Program
+  | BinaryOperation
   | EntryPoint
   | Enumeration
   | Rule
@@ -92,7 +135,7 @@ export type NodeType =
   | TypeAlias
   | TypeSignature
   | TypeCast
-  | ArithmeticOperation
+  | ArithmeticBinaryOperation
   | AssignOperation
   | ComparisonOperation
   | UnifyOperation;
@@ -119,25 +162,21 @@ export function traverse(ast: AST | NodeType, visitor: Visitor) {
       stop = visitor["*"](node, parent) === true;
     }
 
-    if (stop) {
-      return true;
-    }
+    if (stop) return true;
 
     // Recursively visit children based on their type
     for (const key in node) {
-      if (Object.prototype.hasOwnProperty.call(node, key)) {
-        const value = (node as any)[key];
+      if (!node.hasOwnProperty(key)) continue;
 
-        if (Array.isArray(value)) {
-          for (const item of value) {
-            if (runVisitor(item, node)) {
-              return true;
-            }
-          }
-        } else if (value && typeof value === "object" && "type" in value) {
-          if (runVisitor(value as NodeType, node)) {
-            return true;
-          }
+      const value = node[key];
+
+      if (!value) return false;
+
+      const items = Array.isArray(value) ? value : [value];
+
+      for (const item of items) {
+        if (typeof item === "object" && item.type && runVisitor(item, node)) {
+          return true;
         }
       }
     }
@@ -147,11 +186,28 @@ export function traverse(ast: AST | NodeType, visitor: Visitor) {
   // Handle the initial AST array or a single node
   if (Array.isArray(ast)) {
     for (const node of ast) {
-      if (runVisitor(node)) {
-        break;
-      }
+      if (runVisitor(node)) break;
     }
   } else {
     runVisitor(ast);
   }
+}
+
+const PrimitiveValues: YukigoPrimitive[] = [
+  "YuNumber",
+  "YuString",
+  "YuChar",
+  "YuBoolean",
+  "YuTuple",
+  "YuList",
+  "YuNil",
+  "YuDict",
+  "YuObject",
+  "YuSymbol",
+];
+
+export function isYukigoPrimitive(
+  keyInput: string
+): keyInput is YukigoPrimitive {
+  return PrimitiveValues.includes(keyInput as YukigoPrimitive);
 }

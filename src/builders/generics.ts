@@ -1,40 +1,40 @@
 import {
   BodyExpression,
   Expression,
-  ComparisonOperatorType,
-  ComparisonOperation,
-  AssignOperatorType,
-  AssignOperation,
-  UnifyOperatorType,
-  UnifyOperation,
-  ArithmeticOperatorType,
-  ArithmeticOperation,
   Function,
   Equation,
   GuardedBody,
   UnguardedBody,
   SymbolPrimitive,
 } from "../globals/generics.js";
-import { Pattern } from "../globals/patterns.js";
 import {
-  Clause,
+  ArithmeticBinaryOperation,
+  ArithmeticBinaryOperator,
+  ArithmeticUnaryOperation,
+  ArithmeticUnaryOperator,
+  AssignOperation,
+  AssignOperator,
+  ComparisonOperation,
+  ComparisonOperatorType,
+  ListBinaryOperation,
+  ListBinaryOperator,
+  UnifyOperation,
+  UnifyOperator,
+} from "../globals/operators.js";
+import { Pattern } from "../globals/patterns.js";
+import { Lambda } from "../paradigms/functional.js";
+import {
   Exist,
   Fact,
   Findall,
   Forall,
   Not,
-  Program,
   Query,
   Rule,
 } from "../paradigms/logic.js";
 import { symbolPrimitive } from "./primitives.js";
 
 // Logic
-
-export const program = (declarations: Clause[]): Program => ({
-  type: "Program",
-  clauses: declarations,
-});
 
 export function rule(
   atom: SymbolPrimitive,
@@ -142,8 +142,21 @@ export function comparisonOp(
   };
 }
 
+export function listBinaryOp(
+  operator: ListBinaryOperator,
+  left: Expression,
+  right: Expression
+): ListBinaryOperation {
+  return {
+    type: "ListBinaryOperation",
+    operator,
+    left,
+    right,
+  };
+}
+
 export function assignmentOp(
-  operator: AssignOperatorType,
+  operator: AssignOperator,
   left: Expression,
   right: Expression
 ): AssignOperation {
@@ -156,7 +169,7 @@ export function assignmentOp(
 }
 
 export function unifyOp(
-  operator: UnifyOperatorType,
+  operator: UnifyOperator,
   left: Expression,
   right: Expression
 ): UnifyOperation {
@@ -169,14 +182,32 @@ export function unifyOp(
 }
 
 export function arithmetic(
-  operator: ArithmeticOperatorType,
+  operator: ArithmeticBinaryOperator,
   left: Expression,
   right: Expression
-): ArithmeticOperation {
+): ArithmeticBinaryOperation {
   return {
-    type: "ArithmeticOperation",
+    type: "ArithmeticBinaryOperation",
     operator,
     left,
     right,
+  };
+}
+export function arithmeticUnary(
+  operator: ArithmeticUnaryOperator,
+  operand: Expression
+): ArithmeticUnaryOperation {
+  return {
+    type: "ArithmeticUnaryOperation",
+    operator,
+    operand,
+  };
+}
+
+export function lambda(parameters: Pattern[], body: Expression): Lambda {
+  return {
+    type: "Lambda",
+    parameters,
+    body,
   };
 }
