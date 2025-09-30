@@ -29,11 +29,6 @@ export interface Yield {
   expression: Expression;
 }
 
-export interface Return {
-  type: "Return";
-  body: Expression;
-}
-
 export interface InfixApplicationExpression {
   type: "InfixApplication";
   operator: SymbolPrimitive;

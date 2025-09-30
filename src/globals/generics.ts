@@ -110,34 +110,6 @@ export interface Position {
   offset: number;
 }
 
-// Collections
-
-/**
- * Base collection interface
- */
-export interface BaseCollection {
-  type: string;
-  elements: Expression[];
-}
-
-export interface ArrayCollection extends BaseCollection {
-  type: "array";
-}
-
-// Not implemented yet
-export interface SetCollection extends BaseCollection {
-  type: "set";
-}
-// Not implemented yet
-export interface MapCollection {
-  type: "map";
-  entries: MapEntry[];
-}
-export interface MapEntry {
-  key: Expression;
-  value: Expression;
-}
-
 // Expressions
 
 export interface TupleExpression {
@@ -175,12 +147,19 @@ export interface If {
   else: Expression;
 }
 
+export interface Return {
+  type: "Return";
+  body: Expression;
+}
+
 export type BodyExpression =
   | Primitive
   | Operation
   | TupleExpression
   | If
   | Print
+  | Otherwise
+  | Variable
   | ConsExpression
   | DataExpression
   | CompositionExpression
@@ -191,6 +170,7 @@ export type BodyExpression =
   | Forall
   | Findall
   | Not
+  | Return
   | TypeCast;
 
 export type Expression = {
@@ -205,7 +185,7 @@ export interface Field {
 }
 
 export interface Constructor {
-  type: "Constructor"
+  type: "Constructor";
   name: string;
   fields: Field[];
 }
@@ -218,7 +198,7 @@ export interface Record {
 
 export interface UnguardedBody {
   type: "UnguardedBody";
-  expression: Expression;
+  sequence: Sequence;
 }
 
 export interface GuardedBody {
@@ -231,6 +211,7 @@ export interface Equation {
   type: "Equation";
   patterns: Pattern[];
   body: UnguardedBody | GuardedBody[];
+  return?: Return;
 }
 
 export interface Function {
@@ -247,6 +228,7 @@ export type Statement =
   | TypeSignature
   | Class
   | Object
+  | Return
   | Interface
   | Enumeration
   | Assignment
@@ -260,6 +242,16 @@ export type AST = Statement[];
 export interface YukigoParser {
   errors?: string[];
   parse: (code: string) => AST;
+}
+
+export interface Otherwise {
+  type: "Otherwise";
+}
+
+export function otherwise(): Otherwise {
+  return {
+    type: "Otherwise",
+  };
 }
 export interface Match {
   type: "Match";
@@ -313,7 +305,7 @@ export interface Continue {
 }
 export interface Sequence {
   type: "Sequence";
-  expressions: Expression[];
+  statements: Statement[];
 }
 export interface Arrow {
   type: "Arrow";
@@ -331,6 +323,17 @@ export interface Variable {
   identifier: SymbolPrimitive;
   expression: Expression;
 }
+
+export const variable = (
+  identifier: SymbolPrimitive,
+  expression: Expression
+): Variable => {
+  return {
+    type: "Variable",
+    identifier,
+    expression,
+  };
+};
 
 export interface Assignment {
   type: "Assignment";

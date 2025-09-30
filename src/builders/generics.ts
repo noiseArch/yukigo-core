@@ -6,6 +6,10 @@ import {
   GuardedBody,
   UnguardedBody,
   SymbolPrimitive,
+  If,
+  Sequence,
+  Return,
+  Statement,
 } from "../globals/generics.js";
 import {
   ArithmeticBinaryOperation,
@@ -18,6 +22,8 @@ import {
   ComparisonOperatorType,
   ListBinaryOperation,
   ListBinaryOperator,
+  ListUnaryOperation,
+  ListUnaryOperator,
   UnifyOperation,
   UnifyOperator,
 } from "../globals/operators.js";
@@ -100,18 +106,33 @@ export const func = (name: string, ...declarations: Equation[]): Function => ({
   equations: declarations,
 });
 
+export const sequence = (statements: Statement[]): Sequence => {
+  return {
+    type: "Sequence",
+    statements,
+  };
+};
+export const returnExpr = (body: BodyExpression | Expression): Return => {
+  return {
+    type: "Return",
+    body: body.type === "Expression" ? body : expression(body),
+  };
+};
+
 export const equation = (
   patterns: Pattern[],
-  body: GuardedBody[] | UnguardedBody
+  body: GuardedBody[] | UnguardedBody,
+  returnExpr?: Return
 ): Equation => ({
   type: "Equation",
   patterns,
   body,
+  return: returnExpr,
 });
 
-export const unguardedbody = (expression: Expression): UnguardedBody => ({
+export const unguardedbody = (sequence: Sequence): UnguardedBody => ({
   type: "UnguardedBody",
-  expression,
+  sequence,
 });
 export const guardedbody = (
   condition: Expression,
@@ -126,6 +147,18 @@ export function expression(body: BodyExpression): Expression {
   return {
     type: "Expression",
     body,
+  };
+}
+export function ifThenElse(
+  condition: Expression,
+  then: Expression,
+  elseExpr: Expression
+): If {
+  return {
+    type: "If",
+    condition,
+    then,
+    else: elseExpr,
   };
 }
 
@@ -152,6 +185,16 @@ export function listBinaryOp(
     operator,
     left,
     right,
+  };
+}
+export function listUnaryOp(
+  operator: ListUnaryOperator,
+  operand: Expression
+): ListUnaryOperation {
+  return {
+    type: "ListUnaryOperation",
+    operator,
+    operand,
   };
 }
 

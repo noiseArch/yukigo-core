@@ -6,8 +6,15 @@ export type ArithmeticBinaryOperator =
   | "Multiply"
   | "Divide"
   | "Modulo"
-  | "Power";
-export type ArithmeticUnaryOperator = "Round" | "Absolute" | "Ceil" | "Floor" | "Sqrt";
+  | "Power"
+  | "Max"
+  | "Min";
+export type ArithmeticUnaryOperator =
+  | "Round"
+  | "Absolute"
+  | "Ceil"
+  | "Floor"
+  | "Sqrt";
 
 export type ComparisonOperatorType =
   | "Equal"
@@ -21,7 +28,7 @@ export type ComparisonOperatorType =
   | "LessOrEqualThan"
   | "LessThan";
 
-export type LogicalBinaryOperator = "And" | "Or" | "Negation";
+export type LogicalBinaryOperator = "And" | "Or";
 export type LogicalUnaryOperator = "Negation";
 
 export type BitwiseOperatorType =
@@ -41,13 +48,11 @@ export type ListBinaryOperator =
   | "AllSatisfy"
   | "AnySatisfy"
   | "Select"
+  | "Detect"
   | "SetAt";
 
 export type ListUnaryOperator =
-  | "Max"
-  | "Min"
   | "Size"
-  | "Detect"
   | "DetectMax"
   | "DetectMin"
   | "Count"

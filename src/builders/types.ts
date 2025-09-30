@@ -75,16 +75,23 @@ export const typeSig = (
   inputs: Type[],
   output: Type,
   constraints: Constraint[] = []
-): TypeSignature => ({
-  type: "TypeSignature",
-  identifier: symbolPrimitive(name),
-  body: {
-    type: "ParameterizedType",
-    inputs: inputs,
-    return: output,
-    constraints,
-  },
-});
+): TypeSignature =>
+  inputs.length === 0
+    ? {
+        type: "TypeSignature",
+        identifier: symbolPrimitive(name),
+        body: output,
+      }
+    : {
+        type: "TypeSignature",
+        identifier: symbolPrimitive(name),
+        body: {
+          type: "ParameterizedType",
+          inputs: inputs,
+          return: output,
+          constraints,
+        },
+      };
 
 export const typeCast = (body: Type, expression: Expression): TypeCast => ({
   type: "TypeCast",
