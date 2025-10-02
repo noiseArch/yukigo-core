@@ -1,4 +1,4 @@
-import { Expression, SymbolPrimitive } from "./generics.js";
+import { ASTNode, Expression, SymbolPrimitive, Visitor } from "./generics.js";
 
 export type Type =
   | SimpleType
@@ -9,102 +9,163 @@ export type Type =
   | ParameterizedType
   | ConstrainedType;
 
-export interface SimpleType {
-  type: "SimpleType";
+export class SimpleType extends ASTNode {
   value: string;
   constraints: Constraint[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitSimpleType(this);
+  }
+  toJSON() {
+    return {
+      type: "SimpleType",
+      value: this.value,
+      constraints: this.constraints.map((c) => c.toJSON()),
+    };
+  }
 }
-export interface TypeVar {
-  type: "TypeVar";
+export class TypeVar extends ASTNode {
   value: string;
   constraints: Constraint[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTypeVar(this);
+  }
+  toJSON() {
+    return {
+      type: "TypeVar",
+      value: this.value,
+      constraints: this.constraints.map((c) => c.toJSON()),
+    };
+  }
 }
-export interface TypeApplication {
-  type: "TypeApplication";
+export class TypeApplication extends ASTNode {
   function: Type;
   argument: Type;
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTypeApplication(this);
+  }
+  toJSON() {
+    return {
+      type: "TypeApplication",
+      function: this.function.toJSON(),
+      argument: this.argument.toJSON(),
+    };
+  }
 }
-export interface ListType {
-  type: "ListType";
+export class ListType extends ASTNode {
   values: Type;
   constraints: Constraint[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitListType(this);
+  }
+  toJSON() {
+    return {
+      type: "ListType",
+      values: this.values.toJSON(),
+      constraints: this.constraints.map((c) => c.toJSON()),
+    };
+  }
 }
-export interface TupleType {
-  type: "TupleType";
+export class TupleType extends ASTNode {
   values: Type[];
   constraints: Constraint[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTupleType(this);
+  }
+  toJSON() {
+    return {
+      type: "TupleType",
+      values: this.values.map((val) => val.toJSON()),
+      constraints: this.constraints.map((c) => c.toJSON()),
+    };
+  }
 }
 
-export interface Constraint {
-  type: "Constraint";
+export class Constraint extends ASTNode {
   name: string;
   parameters: Type[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitConstraint(this);
+  }
+  toJSON() {
+    return {
+      type: "Constraint",
+      name: this.name,
+      parameters: this.parameters.map((p) => p.toJSON()),
+    };
+  }
 }
 
-export interface ParameterizedType {
-  type: "ParameterizedType";
+export class ParameterizedType extends ASTNode {
   inputs: Type[];
   return: Type;
   constraints: Constraint[];
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitParameterizedType(this);
+  }
+  toJSON() {
+    return {
+      type: "ParameterizedType",
+      inputs: this.inputs.map((p) => p.toJSON()),
+      return: this.return.toJSON(),
+      constraints: this.constraints.map((p) => p.toJSON()),
+    };
+  }
 }
-export type ConstrainedType = {
-  type: "ConstrainedType";
+export class ConstrainedType extends ASTNode {
   constraints: Constraint[];
-};
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitConstrainedType(this);
+  }
+  toJSON() {
+    return {
+      type: "ConstrainedType",
+      constraints: this.constraints.map((p) => p.toJSON()),
+    };
+  }
+}
 
-export interface TypeAlias {
-  type: "TypeAlias";
+export class TypeAlias extends ASTNode {
   identifier: SymbolPrimitive;
   variables: string[];
   value: Type;
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTypeAlias(this);
+  }
+  toJSON() {
+    return {
+      type: "TypeAlias",
+      identifier: this.identifier.toJSON(),
+      variables: this.variables,
+      value: this.value.toJSON(),
+    };
+  }
 }
 
-export interface TypeSignature {
-  type: "TypeSignature";
+export class TypeSignature extends ASTNode {
   identifier: SymbolPrimitive;
   body: Type;
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTypeSignature(this);
+  }
+  toJSON() {
+    return {
+      type: "TypeSignature",
+      identifier: this.identifier.toJSON(),
+      body: this.body.toJSON(),
+    };
+  }
 }
-export interface TypeCast {
-  type: "TypeCast";
+export class TypeCast extends ASTNode {
   expression: Expression;
   body: Type;
+  accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitTypeCast(this);
+  }
+  toJSON() {
+    return {
+      type: "TypeCast",
+      expression: this.expression.toJSON(),
+      body: this.body.toJSON(),
+    };
+  }
 }
-
-/* 
-export type TypeVar = { type: "TypeVar"; name: string };
-export type TypeConstructor = { type: "TypeConstructor"; name: string };
-
-export type FunctionType = {
-  type: "FunctionType";
-  from: TypeNode[];
-  to: TypeNode;
-};
-export type TypeApplication = {
-  type: "TypeApplication";
-  base: TypeNode;
-  args: TypeNode[];
-};
-export type ListType = { type: "ListType"; element: TypeNode };
-export type TupleType = { type: "TupleType"; elements: TypeNode[] };
-export type DataType = {
-  type: "DataType";
-  name: string;
-  constructors: { name: string; fields: TypeNode[] }[];
-};
-export type IfTheElseType = {
-  type: "IfTheElseType";
-  condition: TypeNode;
-  then: TypeNode;
-  else: TypeNode;
-};
-
-export type TypeNode =
-  | TypeVar
-  | TypeConstructor
-  | ConstrainedType
-  | FunctionType
-  | TypeApplication
-  | ListType
-  | TupleType
-  | DataType
-  | IfTheElseType; */

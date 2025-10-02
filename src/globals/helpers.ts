@@ -5,13 +5,8 @@ import {
   Record as RecordNode,
   YukigoPrimitive,
   Expression,
-  BodyExpression,
-  Function,
-  SymbolPrimitive,
-  Equation,
-  GuardedBody,
-  UnguardedBody,
   Variable,
+  ASTNode,
 } from "./generics.js";
 import {
   Application,
@@ -43,7 +38,7 @@ import {
   Fact,
   Findall,
   Forall,
-  GoalExpression,
+  Goal,
   Not,
   Query,
   Rule,
@@ -80,72 +75,12 @@ import {
   UnifyOperation,
 } from "./operators.js";
 
-export type NodeType =
-  | AST[number]
-  | Procedure
-  | Expression
-  | Pattern
-  | Variable
-  | PrimitiveMethod
-  | Type
-  | Include
-  | BinaryOperation
-  | EntryPoint
-  | Enumeration
-  | Rule
-  | Fact
-  | Query
-  | Exist
-  | Not
-  | Findall
-  | Forall
-  | GoalExpression
-  | Application
-  | RecordNode
-  | CompositionExpression
-  | InfixApplicationExpression
-  | Lambda
-  | ForLoop
-  | While
-  | Repeat
-  | For
-  | Attribute
-  | Method
-  | Object
-  | Class
-  | Interface
-  | Send
-  | New
-  | ApplicationPattern
-  | AsPattern
-  | ConsPattern
-  | ConstructorPattern
-  | FunctorPattern
-  | InfixApplicationPattern
-  | ListPattern
-  | LiteralPattern
-  | Yield
-  | TuplePattern
-  | UnionPattern
-  | VariablePattern
-  | WildcardPattern
-  | SimpleType
-  | TupleType
-  | ParameterizedType
-  | TypeAlias
-  | TypeSignature
-  | TypeCast
-  | ArithmeticBinaryOperation
-  | AssignOperation
-  | ComparisonOperation
-  | UnifyOperation;
+/* type Visitor = {
+  [key: string]: (node: ASTNode, parent?: ASTNode) => boolean | void;
+}; */
 
-type Visitor = {
-  [key: string]: (node: NodeType, parent?: NodeType) => boolean | void;
-};
-
-export function traverse(ast: AST | NodeType, visitor: Visitor) {
-  function runVisitor(node: NodeType, parent?: NodeType) {
+/* export function traverse(ast: AST | ASTNode, visitor: Visitor) {
+  function runVisitor(node: ASTNode, parent?: ASTNode) {
     if (!node || typeof node !== "object" || !("type" in node)) {
       return false;
     }
@@ -191,7 +126,7 @@ export function traverse(ast: AST | NodeType, visitor: Visitor) {
   } else {
     runVisitor(ast);
   }
-}
+} */
 
 const PrimitiveValues: YukigoPrimitive[] = [
   "YuNumber",
@@ -206,8 +141,6 @@ const PrimitiveValues: YukigoPrimitive[] = [
   "YuSymbol",
 ];
 
-export function isYukigoPrimitive(
-  keyInput: string
-): keyInput is YukigoPrimitive {
-  return PrimitiveValues.includes(keyInput as YukigoPrimitive);
+export function isYukigoPrimitive(input: string): input is YukigoPrimitive {
+  return PrimitiveValues.includes(input as YukigoPrimitive);
 }

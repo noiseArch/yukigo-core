@@ -1,4 +1,4 @@
-import { Expression } from "./generics.js";
+import { ASTNode, Expression, Visitor } from "./generics.js";
 
 export type ArithmeticBinaryOperator =
   | "Plus"
@@ -84,69 +84,91 @@ export type BinaryOperator =
 
 export type Operator = UnaryOperator | BinaryOperator;
 
-export interface BinaryOperation {
+export class BinaryOperation extends ASTNode {
   type: string;
   operator: BinaryOperator;
   right: Expression;
   left: Expression;
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitBinaryOperation(this);
+  }
+  public toJSON() {
+    return {
+      type: this.type,
+      operator: this.operator,
+      right: this.right,
+      left: this.left
+    }
+  }
 }
-export interface UnaryOperation {
+
+export class UnaryOperation extends ASTNode {
   type: string;
   operator: UnaryOperator;
   operand: Expression;
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitUnaryOperation(this);
+  }
+  public toJSON() {
+    return {
+      type: this.type,
+      operator: this.operator,
+      operand: this.operand,
+    }
+  }
 }
 
-export interface ArithmeticUnaryOperation extends UnaryOperation {
-  type: "ArithmeticUnaryOperation";
-  operator: ArithmeticUnaryOperator;
+export class ArithmeticUnaryOperation extends UnaryOperation {
+  declare type: "ArithmeticUnaryOperation";
+  declare operator: ArithmeticUnaryOperator;
 }
 
-export interface ArithmeticBinaryOperation extends BinaryOperation {
-  type: "ArithmeticBinaryOperation";
-  operator: ArithmeticBinaryOperator;
+export class ArithmeticBinaryOperation extends BinaryOperation {
+  declare type: "ArithmeticBinaryOperation";
+  declare operator: ArithmeticBinaryOperator;
 }
-export interface ListUnaryOperation extends UnaryOperation {
-  type: "ListUnaryOperation";
-  operator: ListUnaryOperator;
-}
-
-export interface ListBinaryOperation extends BinaryOperation {
-  type: "ListBinaryOperation";
-  operator: ListBinaryOperator;
+export class ListUnaryOperation extends UnaryOperation {
+  declare type: "ListUnaryOperation";
+  declare operator: ListUnaryOperator;
 }
 
-export interface ComparisonOperation extends BinaryOperation {
-  type: "ComparisonOperation";
-  operator: ComparisonOperatorType;
+export class ListBinaryOperation extends BinaryOperation {
+  declare type: "ListBinaryOperation";
+  declare operator: ListBinaryOperator;
 }
 
-export interface LogicalBinaryOperation extends BinaryOperation {
-  type: "LogicalBinaryOperation";
-  operator: LogicalBinaryOperator;
-}
-export interface LogicalUnaryOperation extends UnaryOperation {
-  type: "LogicalUnaryOperation";
-  operator: LogicalUnaryOperator;
+export class ComparisonOperation extends BinaryOperation {
+  declare type: "ComparisonOperation";
+  declare operator: ComparisonOperatorType;
 }
 
-export interface BitwiseOperation extends BinaryOperation {
-  type: "BitwiseOperation";
-  operator: BitwiseOperatorType;
+export class LogicalBinaryOperation extends BinaryOperation {
+  declare type: "LogicalBinaryOperation";
+  declare operator: LogicalBinaryOperator;
+}
+export class LogicalUnaryOperation extends UnaryOperation {
+  declare type: "LogicalUnaryOperation";
+  declare operator: LogicalUnaryOperator;
 }
 
-export interface StringOperation extends BinaryOperation {
-  type: "StringOperation";
-  operator: StringBinaryOperator;
+export class BitwiseOperation extends BinaryOperation {
+  declare type: "BitwiseOperation";
+  declare operator: BitwiseOperatorType;
 }
 
-export interface UnifyOperation extends BinaryOperation {
-  type: "UnifyOperation";
-  operator: UnifyOperator;
+export class StringOperation extends BinaryOperation {
+  declare type: "StringOperation";
+  declare operator: StringBinaryOperator;
 }
 
-export interface AssignOperation extends BinaryOperation {
-  type: "AssignOperation";
-  operator: AssignOperator;
+export class UnifyOperation extends BinaryOperation {
+  declare type: "UnifyOperation";
+  declare operator: UnifyOperator;
+}
+
+export class AssignOperation extends BinaryOperation {
+  declare type: "AssignOperation";
+  declare operator: AssignOperator;
 }
 
 export type Operation =
