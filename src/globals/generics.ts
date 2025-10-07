@@ -760,7 +760,8 @@ export class Continue extends ASTNode {
 export class Variable extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public expression: Expression
+    public expression: Expression,
+    public variableType?: Type
   ) {
     super();
   }
@@ -772,6 +773,7 @@ export class Variable extends ASTNode {
       type: "Variable",
       identifier: this.identifier.toJSON(),
       expression: this.expression.toJSON(),
+      variableType: this.variableType.toJSON(),
     };
   }
 }
