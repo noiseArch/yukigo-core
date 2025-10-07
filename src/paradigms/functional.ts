@@ -7,10 +7,11 @@ import {
 import { Pattern } from "../globals/patterns.js";
 
 export class CompositionExpression extends ASTNode {
-  left: Expression;
-  right: Expression;
+  constructor(public left: Expression, public right: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitCompositionExpression(this);
+    return visitor.visitCompositionExpression?.(this);
   }
   public toJSON() {
     return {
@@ -22,10 +23,11 @@ export class CompositionExpression extends ASTNode {
 }
 
 export class Lambda extends ASTNode {
-  parameters: Pattern[];
-  body: Expression;
+  constructor(public parameters: Pattern[], public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitLambda(this);
+    return visitor.visitLambda?.(this);
   }
   public toJSON() {
     return {
@@ -36,9 +38,11 @@ export class Lambda extends ASTNode {
   }
 }
 export class Yield extends ASTNode {
-  expression: Expression;
+  constructor(public expression: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitYield(this);
+    return visitor.visitYield?.(this);
   }
   public toJSON() {
     return {
@@ -49,11 +53,15 @@ export class Yield extends ASTNode {
 }
 
 export class InfixApplicationExpression extends ASTNode {
-  operator: SymbolPrimitive;
-  left: Expression;
-  right: Expression;
+  constructor(
+    public operator: SymbolPrimitive,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInfixApplicationExpression(this);
+    return visitor.visitInfixApplicationExpression?.(this);
   }
   public toJSON() {
     return {
@@ -66,15 +74,16 @@ export class InfixApplicationExpression extends ASTNode {
 }
 
 export class Application extends ASTNode {
-  function: Expression;
-  parameter: Expression;
+  constructor(public functionExpr: Expression, public parameter: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitApplication(this);
+    return visitor.visitApplication?.(this);
   }
   public toJSON() {
     return {
       type: "Application",
-      function: this.function.toJSON(),
+      function: this.functionExpr.toJSON(),
       parameter: this.parameter.toJSON(),
     };
   }

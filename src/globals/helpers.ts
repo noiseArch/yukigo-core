@@ -1,79 +1,15 @@
 import {
-  AST,
-  For,
-  PrimitiveMethod,
-  Record as RecordNode,
   YukigoPrimitive,
-  Expression,
-  Variable,
   ASTNode,
+  BooleanPrimitive,
+  NumberPrimitive,
+  ListPrimitive,
+  CharPrimitive,
+  StringPrimitive,
+  NilPrimitive,
+  SymbolPrimitive,
+  Primitive,
 } from "./generics.js";
-import {
-  Application,
-  CompositionExpression,
-  InfixApplicationExpression,
-  Lambda,
-  Yield,
-} from "../paradigms/functional.js";
-import {
-  EntryPoint,
-  Enumeration,
-  ForLoop,
-  Procedure,
-  Repeat,
-  While,
-} from "../paradigms/imperative.js";
-import {
-  Attribute,
-  Class,
-  Include,
-  Interface,
-  Method,
-  New,
-  Object,
-  Send,
-} from "../paradigms/object.js";
-import {
-  Exist,
-  Fact,
-  Findall,
-  Forall,
-  Goal,
-  Not,
-  Query,
-  Rule,
-} from "../paradigms/logic.js";
-import {
-  ApplicationPattern,
-  AsPattern,
-  ConsPattern,
-  ConstructorPattern,
-  FunctorPattern,
-  InfixApplicationPattern,
-  ListPattern,
-  LiteralPattern,
-  Pattern,
-  TuplePattern,
-  UnionPattern,
-  VariablePattern,
-  WildcardPattern,
-} from "./patterns.js";
-import {
-  ParameterizedType,
-  SimpleType,
-  TupleType,
-  Type,
-  TypeAlias,
-  TypeCast,
-  TypeSignature,
-} from "./types.js";
-import {
-  ArithmeticBinaryOperation,
-  AssignOperation,
-  BinaryOperation,
-  ComparisonOperation,
-  UnifyOperation,
-} from "./operators.js";
 
 /* type Visitor = {
   [key: string]: (node: ASTNode, parent?: ASTNode) => boolean | void;
@@ -128,19 +64,15 @@ import {
   }
 } */
 
-const PrimitiveValues: YukigoPrimitive[] = [
-  "YuNumber",
-  "YuString",
-  "YuChar",
-  "YuBoolean",
-  "YuTuple",
-  "YuList",
-  "YuNil",
-  "YuDict",
-  "YuObject",
-  "YuSymbol",
-];
-
-export function isYukigoPrimitive(input: string): input is YukigoPrimitive {
-  return PrimitiveValues.includes(input as YukigoPrimitive);
+// disgusting...
+export function isYukigoPrimitive(node: ASTNode): node is Primitive {
+  return (
+    node instanceof NumberPrimitive ||
+    node instanceof BooleanPrimitive ||
+    node instanceof ListPrimitive ||
+    node instanceof CharPrimitive ||
+    node instanceof StringPrimitive ||
+    node instanceof NilPrimitive ||
+    node instanceof SymbolPrimitive
+  );
 }

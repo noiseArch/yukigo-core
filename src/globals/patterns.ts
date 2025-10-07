@@ -3,15 +3,18 @@ import {
   BooleanPrimitive,
   CharPrimitive,
   NumberPrimitive,
+  Primitive,
   StringPrimitive,
   SymbolPrimitive,
   Visitor,
 } from "./generics.js";
 
 export class VariablePattern extends ASTNode {
-  name: SymbolPrimitive;
+  constructor(public name: SymbolPrimitive) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitVariablePattern(this);
+    return visitor.visitVariablePattern?.(this);
   }
   public toJSON() {
     return {
@@ -22,14 +25,11 @@ export class VariablePattern extends ASTNode {
 }
 
 export class LiteralPattern extends ASTNode {
-  name:
-    | SymbolPrimitive
-    | NumberPrimitive
-    | CharPrimitive
-    | StringPrimitive
-    | BooleanPrimitive;
+  constructor(public name: Primitive) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitLiteralPattern(this);
+    return visitor.visitLiteralPattern?.(this);
   }
   public toJSON() {
     return {
@@ -39,11 +39,15 @@ export class LiteralPattern extends ASTNode {
   }
 }
 export class InfixApplicationPattern extends ASTNode {
-  left: Pattern;
-  cons: string;
-  right: Pattern;
+  constructor(
+    public left: Pattern,
+    public cons: string,
+    public right: Pattern
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInfixApplicationPattern(this);
+    return visitor.visitInfixApplicationPattern?.(this);
   }
   public toJSON() {
     return {
@@ -55,10 +59,11 @@ export class InfixApplicationPattern extends ASTNode {
   }
 }
 export class ApplicationPattern extends ASTNode {
-  symbol: SymbolPrimitive;
-  args: Pattern[];
+  constructor(public symbol: SymbolPrimitive, public args: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitApplicationPattern(this);
+    return visitor.visitApplicationPattern?.(this);
   }
   public toJSON() {
     return {
@@ -70,9 +75,11 @@ export class ApplicationPattern extends ASTNode {
 }
 
 export class TuplePattern extends ASTNode {
-  elements: Pattern[];
+  constructor(public elements: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTuplePattern(this);
+    return visitor.visitTuplePattern?.(this);
   }
   public toJSON() {
     return {
@@ -83,9 +90,11 @@ export class TuplePattern extends ASTNode {
 }
 
 export class ListPattern extends ASTNode {
-  elements: Pattern[];
+  constructor(public elements: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitListPattern(this);
+    return visitor.visitListPattern?.(this);
   }
   public toJSON() {
     return {
@@ -96,10 +105,12 @@ export class ListPattern extends ASTNode {
 }
 
 export class FunctorPattern extends ASTNode {
-  identifier: SymbolPrimitive;
-  args: Pattern[];
+  constructor(public identifier: SymbolPrimitive, public args: Pattern[]) {
+    super();
+  }
+
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFunctorPattern(this);
+    return visitor.visitFunctorPattern?.(this);
   }
   public toJSON() {
     return {
@@ -111,10 +122,14 @@ export class FunctorPattern extends ASTNode {
 }
 
 export class AsPattern extends ASTNode {
-  alias: VariablePattern | WildcardPattern;
-  pattern: Pattern;
+  constructor(
+    public alias: VariablePattern | WildcardPattern,
+    public pattern: Pattern
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitAsPattern(this);
+    return visitor.visitAsPattern?.(this);
   }
   public toJSON() {
     return {
@@ -127,7 +142,7 @@ export class AsPattern extends ASTNode {
 
 export class WildcardPattern extends ASTNode {
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitWildcardPattern(this);
+    return visitor.visitWildcardPattern?.(this);
   }
   public toJSON() {
     return {
@@ -138,9 +153,11 @@ export class WildcardPattern extends ASTNode {
 }
 
 export class UnionPattern extends ASTNode {
-  patterns: Pattern[];
+  constructor(public patterns: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitUnionPattern(this);
+    return visitor.visitUnionPattern?.(this);
   }
   public toJSON() {
     return {
@@ -151,10 +168,11 @@ export class UnionPattern extends ASTNode {
 }
 
 export class ConstructorPattern extends ASTNode {
-  constr: string;
-  patterns: Pattern[];
+  constructor(public constr: string, public patterns: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConstructorPattern(this);
+    return visitor.visitConstructorPattern?.(this);
   }
   public toJSON() {
     return {
@@ -166,10 +184,11 @@ export class ConstructorPattern extends ASTNode {
 }
 
 export class ConsPattern extends ASTNode {
-  head: Pattern;
-  tail: Pattern;
+  constructor(public head: Pattern, public tail: Pattern) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConsPattern(this);
+    return visitor.visitConsPattern?.(this);
   }
   public toJSON() {
     return {

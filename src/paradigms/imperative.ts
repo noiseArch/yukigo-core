@@ -7,10 +7,14 @@ import {
 } from "../globals/generics.js";
 
 export class EntryPoint extends ASTNode {
-  identifier: SymbolPrimitive;
-  expressions: Expression[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public expressions: Expression[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitEntryPoint(this);
+    return visitor.visitEntryPoint?.(this);
   }
   public toJSON() {
     return {
@@ -22,10 +26,14 @@ export class EntryPoint extends ASTNode {
 }
 
 export class Procedure extends ASTNode {
-  identifier: SymbolPrimitive;
-  equations: Equation[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public equations: Equation[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitProcedure(this);
+    return visitor.visitProcedure?.(this);
   }
   public toJSON() {
     return {
@@ -37,10 +45,14 @@ export class Procedure extends ASTNode {
 }
 
 export class Enumeration extends ASTNode {
-  identifier: SymbolPrimitive;
-  contents: SymbolPrimitive[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public contents: SymbolPrimitive[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitEnumeration(this);
+    return visitor.visitEnumeration?.(this);
   }
   public toJSON() {
     return {
@@ -52,10 +64,11 @@ export class Enumeration extends ASTNode {
 }
 
 export class While extends ASTNode {
-  condition: Expression;
-  body: Expression;
+  constructor(public condition: Expression, public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitWhile(this);
+    return visitor.visitWhile?.(this);
   }
   public toJSON() {
     return {
@@ -66,10 +79,11 @@ export class While extends ASTNode {
   }
 }
 export class Repeat extends ASTNode {
-  count: Expression;
-  body: Expression;
+  constructor(public count: Expression, public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitRepeat(this);
+    return visitor.visitRepeat?.(this);
   }
   public toJSON() {
     return {
@@ -81,12 +95,16 @@ export class Repeat extends ASTNode {
 }
 
 export class ForLoop extends ASTNode {
-  initialization: Expression;
-  condition: Expression;
-  update: Expression;
-  body: Expression;
+  constructor(
+    public initialization: Expression,
+    public condition: Expression,
+    public update: Expression,
+    public body: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitForLoop(this);
+    return visitor.visitForLoop?.(this);
   }
   public toJSON() {
     return {

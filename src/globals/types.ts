@@ -10,10 +10,11 @@ export type Type =
   | ConstrainedType;
 
 export class SimpleType extends ASTNode {
-  value: string;
-  constraints: Constraint[];
+  constructor(public value: string, public constraints: Constraint[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSimpleType(this);
+    return visitor.visitSimpleType?.(this);
   }
   toJSON() {
     return {
@@ -24,10 +25,11 @@ export class SimpleType extends ASTNode {
   }
 }
 export class TypeVar extends ASTNode {
-  value: string;
-  constraints: Constraint[];
+  constructor(public value: string, public constraints: Constraint[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTypeVar(this);
+    return visitor.visitTypeVar?.(this);
   }
   toJSON() {
     return {
@@ -38,24 +40,26 @@ export class TypeVar extends ASTNode {
   }
 }
 export class TypeApplication extends ASTNode {
-  function: Type;
-  argument: Type;
+  constructor(public functionType: Type, public argument: Type) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTypeApplication(this);
+    return visitor.visitTypeApplication?.(this);
   }
   toJSON() {
     return {
       type: "TypeApplication",
-      function: this.function.toJSON(),
+      function: this.functionType.toJSON(),
       argument: this.argument.toJSON(),
     };
   }
 }
 export class ListType extends ASTNode {
-  values: Type;
-  constraints: Constraint[];
+  constructor(public values: Type, public constraints: Constraint[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitListType(this);
+    return visitor.visitListType?.(this);
   }
   toJSON() {
     return {
@@ -66,10 +70,11 @@ export class ListType extends ASTNode {
   }
 }
 export class TupleType extends ASTNode {
-  values: Type[];
-  constraints: Constraint[];
+  constructor(public values: Type[], public constraints: Constraint[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTupleType(this);
+    return visitor.visitTupleType?.(this);
   }
   toJSON() {
     return {
@@ -81,10 +86,11 @@ export class TupleType extends ASTNode {
 }
 
 export class Constraint extends ASTNode {
-  name: string;
-  parameters: Type[];
+  constructor(public name: string, public parameters: Type[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConstraint(this);
+    return visitor.visitConstraint?.(this);
   }
   toJSON() {
     return {
@@ -96,25 +102,31 @@ export class Constraint extends ASTNode {
 }
 
 export class ParameterizedType extends ASTNode {
-  inputs: Type[];
-  return: Type;
-  constraints: Constraint[];
+  constructor(
+    public inputs: Type[],
+    public returnType: Type,
+    public constraints: Constraint[]
+  ) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitParameterizedType(this);
+    return visitor.visitParameterizedType?.(this);
   }
   toJSON() {
     return {
       type: "ParameterizedType",
       inputs: this.inputs.map((p) => p.toJSON()),
-      return: this.return.toJSON(),
+      return: this.returnType.toJSON(),
       constraints: this.constraints.map((p) => p.toJSON()),
     };
   }
 }
 export class ConstrainedType extends ASTNode {
-  constraints: Constraint[];
+  constructor(public constraints: Constraint[]) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConstrainedType(this);
+    return visitor.visitConstrainedType?.(this);
   }
   toJSON() {
     return {
@@ -125,11 +137,15 @@ export class ConstrainedType extends ASTNode {
 }
 
 export class TypeAlias extends ASTNode {
-  identifier: SymbolPrimitive;
-  variables: string[];
-  value: Type;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public variables: string[],
+    public value: Type
+  ) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTypeAlias(this);
+    return visitor.visitTypeAlias?.(this);
   }
   toJSON() {
     return {
@@ -142,10 +158,11 @@ export class TypeAlias extends ASTNode {
 }
 
 export class TypeSignature extends ASTNode {
-  identifier: SymbolPrimitive;
-  body: Type;
+  constructor(public identifier: SymbolPrimitive, public body: Type) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTypeSignature(this);
+    return visitor.visitTypeSignature?.(this);
   }
   toJSON() {
     return {
@@ -156,10 +173,11 @@ export class TypeSignature extends ASTNode {
   }
 }
 export class TypeCast extends ASTNode {
-  expression: Expression;
-  body: Type;
+  constructor(public expression: Expression, public body: Type) {
+    super();
+  }
   accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTypeCast(this);
+    return visitor.visitTypeCast?.(this);
   }
   toJSON() {
     return {

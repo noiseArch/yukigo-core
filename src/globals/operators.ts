@@ -84,91 +84,224 @@ export type BinaryOperator =
 
 export type Operator = UnaryOperator | BinaryOperator;
 
-export class BinaryOperation extends ASTNode {
-  type: string;
-  operator: BinaryOperator;
-  right: Expression;
-  left: Expression;
+export class ArithmeticUnaryOperation extends ASTNode {
+  constructor(
+    public operator: ArithmeticUnaryOperator,
+    public operand: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitBinaryOperation(this);
+    return visitor.visitArithmeticUnaryOperation?.(this);
   }
   public toJSON() {
     return {
-      type: this.type,
-      operator: this.operator,
-      right: this.right,
-      left: this.left
-    }
-  }
-}
-
-export class UnaryOperation extends ASTNode {
-  type: string;
-  operator: UnaryOperator;
-  operand: Expression;
-  public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitUnaryOperation(this);
-  }
-  public toJSON() {
-    return {
-      type: this.type,
+      type: "ArithmeticUnaryOperation",
       operator: this.operator,
       operand: this.operand,
-    }
+    };
   }
 }
 
-export class ArithmeticUnaryOperation extends UnaryOperation {
-  declare type: "ArithmeticUnaryOperation";
-  declare operator: ArithmeticUnaryOperator;
+export class ArithmeticBinaryOperation extends ASTNode {
+  constructor(
+    public operator: ArithmeticBinaryOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitArithmeticBinaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "ArithmeticBinaryOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
+}
+export class ListUnaryOperation extends ASTNode {
+  constructor(public operator: ListUnaryOperator, public operand: Expression) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitListUnaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "ListUnaryOperation",
+      operator: this.operator,
+      operand: this.operand,
+    };
+  }
 }
 
-export class ArithmeticBinaryOperation extends BinaryOperation {
-  declare type: "ArithmeticBinaryOperation";
-  declare operator: ArithmeticBinaryOperator;
-}
-export class ListUnaryOperation extends UnaryOperation {
-  declare type: "ListUnaryOperation";
-  declare operator: ListUnaryOperator;
-}
-
-export class ListBinaryOperation extends BinaryOperation {
-  declare type: "ListBinaryOperation";
-  declare operator: ListBinaryOperator;
-}
-
-export class ComparisonOperation extends BinaryOperation {
-  declare type: "ComparisonOperation";
-  declare operator: ComparisonOperatorType;
-}
-
-export class LogicalBinaryOperation extends BinaryOperation {
-  declare type: "LogicalBinaryOperation";
-  declare operator: LogicalBinaryOperator;
-}
-export class LogicalUnaryOperation extends UnaryOperation {
-  declare type: "LogicalUnaryOperation";
-  declare operator: LogicalUnaryOperator;
+export class ListBinaryOperation extends ASTNode {
+  constructor(
+    public operator: ListBinaryOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitListBinaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "ListBinaryOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
 }
 
-export class BitwiseOperation extends BinaryOperation {
-  declare type: "BitwiseOperation";
-  declare operator: BitwiseOperatorType;
+export class ComparisonOperation extends ASTNode {
+  constructor(
+    public operator: ComparisonOperatorType,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitComparisonOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "ComparisonOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
 }
 
-export class StringOperation extends BinaryOperation {
-  declare type: "StringOperation";
-  declare operator: StringBinaryOperator;
+export class LogicalBinaryOperation extends ASTNode {
+  constructor(
+    public operator: LogicalBinaryOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitLogicalBinaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "LogicalBinaryOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
+}
+export class LogicalUnaryOperation extends ASTNode {
+  constructor(
+    public operator: LogicalUnaryOperator,
+    public operand: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitLogicalUnaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "LogicalUnaryOperation",
+      operator: this.operator,
+      operand: this.operand,
+    };
+  }
 }
 
-export class UnifyOperation extends BinaryOperation {
-  declare type: "UnifyOperation";
-  declare operator: UnifyOperator;
+export class BitwiseOperation extends ASTNode {
+  constructor(
+    public operator: BitwiseOperatorType,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitBitwiseOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "BitwiseOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
 }
 
-export class AssignOperation extends BinaryOperation {
-  declare type: "AssignOperation";
-  declare operator: AssignOperator;
+export class StringOperation extends ASTNode {
+  constructor(
+    public operator: StringBinaryOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitStringOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "StringOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
+}
+
+export class UnifyOperation extends ASTNode {
+  constructor(
+    public operator: UnifyOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitUnifyOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "UnifyOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
+}
+
+export class AssignOperation extends ASTNode {
+  constructor(
+    public operator: AssignOperator,
+    public left: Expression,
+    public right: Expression
+  ) {
+    super();
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitAssignOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "AssignOperation",
+      operator: this.operator,
+      left: this.left,
+      right: this.right,
+    };
+  }
 }
 
 export type Operation =

@@ -7,10 +7,14 @@ import {
 } from "../globals/generics.js";
 
 export class Method extends ASTNode {
-  identifier: SymbolPrimitive;
-  equations: Equation[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public equations: Equation[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitMethod(this);
+    return visitor.visitMethod?.(this);
   }
   public toJSON() {
     return {
@@ -22,10 +26,14 @@ export class Method extends ASTNode {
 }
 
 export class Attribute extends ASTNode {
-  identifier: SymbolPrimitive;
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitAttribute(this);
+    return visitor.visitAttribute?.(this);
   }
   public toJSON() {
     return {
@@ -37,10 +45,14 @@ export class Attribute extends ASTNode {
 }
 
 export class Object extends ASTNode {
-  identifier: SymbolPrimitive;
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitObject(this);
+    return visitor.visitObject?.(this);
   }
   public toJSON() {
     return {
@@ -52,77 +64,92 @@ export class Object extends ASTNode {
 }
 
 export class Class extends ASTNode {
-  identifier: SymbolPrimitive;
-  extends: SymbolPrimitive | undefined;
-  implements: Implement | undefined;
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public extendsSymbol: SymbolPrimitive | undefined,
+    public implementsNode: Implement | undefined,
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitClass(this);
+    return visitor.visitClass?.(this);
   }
   public toJSON() {
     return {
       type: "Class",
       identifier: this.identifier.toJSON(),
-      extends: this.extends.toJSON(),
-      implements: this.implements.toJSON(),
+      extends: this.extendsSymbol.toJSON(),
+      implements: this.implementsNode.toJSON(),
       expression: this.expression.toJSON(),
     };
   }
 }
 
 export class Interface extends ASTNode {
-  identifier: SymbolPrimitive;
-  extends: SymbolPrimitive[];
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public extendsSymbol: SymbolPrimitive[],
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInterface(this);
+    return visitor.visitInterface?.(this);
   }
   public toJSON() {
     return {
       type: "Interface",
       identifier: this.identifier.toJSON(),
-      extends: this.extends.map((symbol) => symbol.toJSON()),
+      extends: this.extendsSymbol.map((symbol) => symbol.toJSON()),
       expression: this.expression.toJSON(),
     };
   }
 }
 
 export class Send extends ASTNode {
-  receiver: Expression;
-  selector: Expression;
-  arguments: Expression[];
+  constructor(
+    public receiver: Expression,
+    public selector: Expression,
+    public args: Expression[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSend(this);
+    return visitor.visitSend?.(this);
   }
   public toJSON() {
     return {
       type: "Send",
       receiver: this.receiver.toJSON(),
       selector: this.selector.toJSON(),
-      arguments: this.arguments.map((arg) => arg.toJSON()),
+      arguments: this.args.map((arg) => arg.toJSON()),
     };
   }
 }
 
 export class New extends ASTNode {
-  identifier: SymbolPrimitive;
-  arguments: Expression[];
+  constructor(public identifier: SymbolPrimitive, public args: Expression[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitNew(this);
+    return visitor.visitNew?.(this);
   }
   public toJSON() {
     return {
       type: "Send",
       identifier: this.identifier.toJSON(),
-      arguments: this.arguments.map((arg) => arg.toJSON()),
+      arguments: this.args.map((arg) => arg.toJSON()),
     };
   }
 }
 
 export class Implement extends ASTNode {
-  identifier: SymbolPrimitive;
+  constructor(public identifier: SymbolPrimitive) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitImplement(this);
+    return visitor.visitImplement?.(this);
   }
   public toJSON() {
     return {
@@ -133,9 +160,11 @@ export class Implement extends ASTNode {
 }
 
 export class Include extends ASTNode {
-  identifier: SymbolPrimitive;
+  constructor(public identifier: SymbolPrimitive) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInclude(this);
+    return visitor.visitInclude?.(this);
   }
   public toJSON() {
     return {
@@ -146,7 +175,7 @@ export class Include extends ASTNode {
 }
 export class Self extends ASTNode {
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSelf(this);
+    return visitor.visitSelf?.(this);
   }
   public toJSON() {
     return {

@@ -39,8 +39,17 @@ import {
 import {
   Operator,
   Operation,
-  BinaryOperation,
-  UnaryOperation,
+  ArithmeticUnaryOperation,
+  ArithmeticBinaryOperation,
+  ListUnaryOperation,
+  ListBinaryOperation,
+  ComparisonOperation,
+  LogicalBinaryOperation,
+  LogicalUnaryOperation,
+  BitwiseOperation,
+  StringOperation,
+  UnifyOperation,
+  AssignOperation,
 } from "./operators.js";
 import {
   ApplicationPattern,
@@ -76,7 +85,7 @@ export type Modify<T, R> = Omit<T, keyof R> & R;
 
 // Universal primitive value types
 
-export interface Visitor<TReturn> {
+export interface StrictVisitor<TReturn> {
   visitSequence(node: Sequence): TReturn;
   // Primitives
   visitNumberPrimitive(node: NumberPrimitive): TReturn;
@@ -87,8 +96,17 @@ export interface Visitor<TReturn> {
   visitSymbolPrimitive(node: SymbolPrimitive): TReturn;
   visitCharPrimitive(node: CharPrimitive): TReturn;
   // Operations
-  visitBinaryOperation(node: BinaryOperation): TReturn;
-  visitUnaryOperation(node: UnaryOperation): TReturn;
+  visitArithmeticUnaryOperation(node: ArithmeticUnaryOperation): TReturn;
+  visitArithmeticBinaryOperation(node: ArithmeticBinaryOperation): TReturn;
+  visitListUnaryOperation(node: ListUnaryOperation): TReturn;
+  visitListBinaryOperation(node: ListBinaryOperation): TReturn;
+  visitComparisonOperation(node: ComparisonOperation): TReturn;
+  visitLogicalBinaryOperation(node: LogicalBinaryOperation): TReturn;
+  visitLogicalUnaryOperation(node: LogicalUnaryOperation): TReturn;
+  visitBitwiseOperation(node: BitwiseOperation): TReturn;
+  visitStringOperation(node: StringOperation): TReturn;
+  visitUnifyOperation(node: UnifyOperation): TReturn;
+  visitAssignOperation(node: AssignOperation): TReturn;
   // Expressions
   visitExpression(node: Expression): TReturn;
   visitTupleExpr(node: TupleExpression): TReturn;
@@ -174,15 +192,19 @@ export interface Visitor<TReturn> {
   visit(node: ASTNode): TReturn;
 }
 
+export type Visitor<R> = Partial<StrictVisitor<R>>;
+
 export abstract class ASTNode {
   abstract accept<R>(visitor: Visitor<R>): R;
   abstract toJSON(): object;
 }
 
 export class NumberPrimitive extends ASTNode {
-  value: number;
+  constructor(public value: number) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitNumberPrimitive(this);
+    return visitor.visitNumberPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -192,9 +214,11 @@ export class NumberPrimitive extends ASTNode {
   }
 }
 export class BooleanPrimitive extends ASTNode {
-  value: boolean;
+  constructor(public value: boolean) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitBooleanPrimitive(this);
+    return visitor.visitBooleanPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -204,9 +228,11 @@ export class BooleanPrimitive extends ASTNode {
   }
 }
 export class ListPrimitive extends ASTNode {
-  elements: Expression[];
+  constructor(public elements: Expression[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitListPrimitive(this);
+    return visitor.visitListPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -217,9 +243,11 @@ export class ListPrimitive extends ASTNode {
 }
 
 export class CharPrimitive extends ASTNode {
-  value: string;
+  constructor(public value: string) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitCharPrimitive(this);
+    return visitor.visitCharPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -229,9 +257,11 @@ export class CharPrimitive extends ASTNode {
   }
 }
 export class StringPrimitive extends ASTNode {
-  value: string;
+  constructor(public value: string) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitStringPrimitive(this);
+    return visitor.visitStringPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -242,9 +272,11 @@ export class StringPrimitive extends ASTNode {
 }
 
 export class NilPrimitive extends ASTNode {
-  value: undefined | null;
+  constructor(public value: undefined | null) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitNilPrimitive(this);
+    return visitor.visitNilPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -255,9 +287,11 @@ export class NilPrimitive extends ASTNode {
 }
 
 export class SymbolPrimitive extends ASTNode {
-  value: string;
+  constructor(public value: string) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSymbolPrimitive(this);
+    return visitor.visitSymbolPrimitive?.(this);
   }
   public toJSON() {
     return {
@@ -313,9 +347,11 @@ export interface Position {
 // Expressions
 
 export class TupleExpression extends ASTNode {
-  elements: Expression[];
+  constructor(public elements: Expression[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTupleExpr(this);
+    return visitor.visitTupleExpr?.(this);
   }
   public toJSON() {
     return {
@@ -326,10 +362,11 @@ export class TupleExpression extends ASTNode {
 }
 
 export class FieldExpression extends ASTNode {
-  name: SymbolPrimitive;
-  expression: Expression;
+  constructor(public name: SymbolPrimitive, public expression: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFieldExpr(this);
+    return visitor.visitFieldExpr?.(this);
   }
   public toJSON() {
     return {
@@ -341,10 +378,14 @@ export class FieldExpression extends ASTNode {
 }
 
 export class DataExpression extends ASTNode {
-  name: SymbolPrimitive;
-  contents: FieldExpression[];
+  constructor(
+    public name: SymbolPrimitive,
+    public contents: FieldExpression[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitDataExpr(this);
+    return visitor.visitDataExpr?.(this);
   }
   public toJSON() {
     return {
@@ -355,10 +396,11 @@ export class DataExpression extends ASTNode {
   }
 }
 export class ConsExpression extends ASTNode {
-  head: Expression;
-  tail: Expression;
+  constructor(public head: Expression, public tail: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConsExpr(this);
+    return visitor.visitConsExpr?.(this);
   }
   public toJSON() {
     return {
@@ -370,10 +412,11 @@ export class ConsExpression extends ASTNode {
 }
 
 export class LetInExpression extends ASTNode {
-  declarations: Expression;
-  expression: Expression;
+  constructor(public declarations: Expression, public expression: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitLetInExpr(this);
+    return visitor.visitLetInExpr?.(this);
   }
   public toJSON() {
     return {
@@ -386,7 +429,7 @@ export class LetInExpression extends ASTNode {
 
 export class Otherwise extends ASTNode {
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitOtherwise(this);
+    return visitor.visitOtherwise?.(this);
   }
   public toJSON() {
     return {
@@ -426,26 +469,32 @@ export type Expression =
 // Statements
 
 export class If extends ASTNode {
-  condition: Expression;
-  then: Expression;
-  else: Expression;
+  constructor(
+    public condition: Expression,
+    public then: Expression,
+    public elseExpr: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitIf(this);
+    return visitor.visitIf?.(this);
   }
   public toJSON() {
     return {
       type: "If",
       condition: this.condition.toJSON(),
       then: this.then.toJSON(),
-      else: this.else.toJSON(),
+      else: this.elseExpr.toJSON(),
     };
   }
 }
 
 export class Return extends ASTNode {
-  body: Expression;
+  constructor(public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitReturn(this);
+    return visitor.visitReturn?.(this);
   }
   public toJSON() {
     return {
@@ -456,11 +505,11 @@ export class Return extends ASTNode {
 }
 
 export class Field extends ASTNode {
-  name: SymbolPrimitive | undefined;
-  value: Type;
-
+  constructor(public name: SymbolPrimitive | undefined, public value: Type) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitField(this);
+    return visitor.visitField?.(this);
   }
   public toJSON() {
     return {
@@ -472,10 +521,11 @@ export class Field extends ASTNode {
 }
 
 export class Constructor extends ASTNode {
-  name: SymbolPrimitive;
-  fields: Field[];
+  constructor(public name: SymbolPrimitive, public fields: Field[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitConstructor(this);
+    return visitor.visitConstructor?.(this);
   }
   public toJSON() {
     return {
@@ -487,10 +537,11 @@ export class Constructor extends ASTNode {
 }
 
 export class Record extends ASTNode {
-  name: SymbolPrimitive;
-  contents: Constructor[];
+  constructor(public name: SymbolPrimitive, public contents: Constructor[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitRecord(this);
+    return visitor.visitRecord?.(this);
   }
   public toJSON() {
     return {
@@ -502,9 +553,11 @@ export class Record extends ASTNode {
 }
 
 export class UnguardedBody extends ASTNode {
-  sequence: Sequence;
+  constructor(public sequence: Sequence) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitUnguardedBody(this);
+    return visitor.visitUnguardedBody?.(this);
   }
   public toJSON() {
     return {
@@ -515,10 +568,11 @@ export class UnguardedBody extends ASTNode {
 }
 
 export class GuardedBody extends ASTNode {
-  condition: Expression;
-  body: Expression;
+  constructor(public condition: Expression, public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitGuardedBody(this);
+    return visitor.visitGuardedBody?.(this);
   }
   public toJSON() {
     return {
@@ -530,11 +584,15 @@ export class GuardedBody extends ASTNode {
 }
 
 export class Equation extends ASTNode {
-  patterns: Pattern[];
-  body: UnguardedBody | GuardedBody[];
-  return?: Return;
+  constructor(
+    public patterns: Pattern[],
+    public body: UnguardedBody | GuardedBody[],
+    public returnExpr?: Return
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitEquation(this);
+    return visitor.visitEquation?.(this);
   }
   public toJSON() {
     return {
@@ -543,16 +601,20 @@ export class Equation extends ASTNode {
       body: Array.isArray(this.body)
         ? this.body.map((guard) => guard.toJSON())
         : this.body.toJSON(),
-      return: this.return.toJSON(),
+      return: this.returnExpr.toJSON(),
     };
   }
 }
 
 export class Function extends ASTNode {
-  identifier: SymbolPrimitive;
-  equations: Equation[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public equations: Equation[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFunction(this);
+    return visitor.visitFunction?.(this);
   }
   public toJSON() {
     return {
@@ -563,15 +625,21 @@ export class Function extends ASTNode {
   }
 }
 
+export type Case = {
+  condition: Expression;
+  body: Expression;
+};
+
 export class Switch extends ASTNode {
-  value: Expression;
-  cases: {
-    condition: Expression;
-    body: Expression;
-  }[];
-  default: Expression;
+  constructor(
+    public value: Expression,
+    public cases: Case[],
+    public defaultExpr: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSwitch(this);
+    return visitor.visitSwitch?.(this);
   }
   public toJSON() {
     return {
@@ -581,38 +649,46 @@ export class Switch extends ASTNode {
         condition: caseVal.condition.toJSON(),
         body: caseVal.body.toJSON(),
       })),
-      default: this.default.toJSON(),
+      default: this.defaultExpr.toJSON(),
     };
   }
 }
 
-export class Try extends ASTNode {
+export type Catch = {
+  patterns: Pattern[];
   body: Expression;
-  catch: {
-    patterns: Pattern[];
-    body: Expression;
-  }[];
-  finally: Expression;
+};
+
+export class Try extends ASTNode {
+  constructor(
+    public body: Expression,
+    public catchExpr: Catch[],
+    public finallyExpr: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitTry(this);
+    return visitor.visitTry?.(this);
   }
   public toJSON() {
     return {
       type: "Try",
       body: this.body.toJSON(),
-      catch: this.catch.map(({ patterns, body }) => ({
+      catch: this.catchExpr.map(({ patterns, body }) => ({
         condition: patterns.map((pattern) => pattern.toJSON()),
         body: body.toJSON(),
       })),
-      finally: this.finally.toJSON(),
+      finally: this.finallyExpr.toJSON(),
     };
   }
 }
 
 export class Raise extends ASTNode {
-  body: Expression;
+  constructor(public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitRaise(this);
+    return visitor.visitRaise?.(this);
   }
   public toJSON() {
     return {
@@ -623,9 +699,11 @@ export class Raise extends ASTNode {
 }
 
 export class Print extends ASTNode {
-  expression: Expression;
+  constructor(public expression: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitPrint(this);
+    return visitor.visitPrint?.(this);
   }
   public toJSON() {
     return {
@@ -636,10 +714,11 @@ export class Print extends ASTNode {
 }
 
 export class For extends ASTNode {
-  body: Expression;
-  statements: Statement[];
+  constructor(public body: Expression, public statements: Statement[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFor(this);
+    return visitor.visitFor?.(this);
   }
   public toJSON() {
     return {
@@ -650,9 +729,11 @@ export class For extends ASTNode {
   }
 }
 export class Break extends ASTNode {
-  body: Expression;
+  constructor(public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitBreak(this);
+    return visitor.visitBreak?.(this);
   }
   public toJSON() {
     return {
@@ -662,9 +743,11 @@ export class Break extends ASTNode {
   }
 }
 export class Continue extends ASTNode {
-  body: Expression;
+  constructor(public body: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitContinue(this);
+    return visitor.visitContinue?.(this);
   }
   public toJSON() {
     return {
@@ -675,10 +758,14 @@ export class Continue extends ASTNode {
 }
 
 export class Variable extends ASTNode {
-  identifier: SymbolPrimitive;
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitVariable(this);
+    return visitor.visitVariable?.(this);
   }
   public toJSON() {
     return {
@@ -690,10 +777,14 @@ export class Variable extends ASTNode {
 }
 
 export class Assignment extends ASTNode {
-  identifier: SymbolPrimitive;
-  expression: Expression;
+  constructor(
+    public identifier: SymbolPrimitive,
+    public expression: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitAssignment(this);
+    return visitor.visitAssignment?.(this);
   }
   public toJSON() {
     return {
@@ -705,9 +796,11 @@ export class Assignment extends ASTNode {
 }
 
 export class Sequence extends ASTNode {
-  statements: Statement[];
+  constructor(public statements: Statement[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitSequence(this);
+    return visitor.visitSequence?.(this);
   }
   public toJSON() {
     return {
@@ -751,7 +844,7 @@ export interface YukigoParser {
   parse: (code: string) => AST;
 }
 
-export interface Match {
+/* export interface Match {
   type: "Match";
   condition: Expression;
   body: Equation[];
@@ -767,4 +860,4 @@ export interface PrimitiveMethod {
   type: "PrimitiveMethod";
   operator: Operator;
   equations: Equation[];
-}
+} */

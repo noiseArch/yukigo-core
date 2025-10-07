@@ -10,11 +10,15 @@ import { Pattern } from "../globals/patterns.js";
 export type Clause = Rule | Fact | Query | Primitive;
 
 export class Rule extends ASTNode {
-  identifier: SymbolPrimitive;
-  patterns: Pattern[];
-  expressions: Expression[];
+  constructor(
+    public identifier: SymbolPrimitive,
+    public patterns: Pattern[],
+    public expressions: Expression[]
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitRule(this);
+    return visitor.visitRule?.(this);
   }
   public toJSON() {
     return {
@@ -27,10 +31,11 @@ export class Rule extends ASTNode {
 }
 
 export class Fact extends ASTNode {
-  identifier: SymbolPrimitive;
-  patterns: Pattern[];
+  constructor(public identifier: SymbolPrimitive, public patterns: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFact(this);
+    return visitor.visitFact?.(this);
   }
   public toJSON() {
     return {
@@ -42,9 +47,11 @@ export class Fact extends ASTNode {
 }
 
 export class Query extends ASTNode {
-  expressions: Expression[];
+  constructor(public expressions: Expression[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitQuery(this);
+    return visitor.visitQuery?.(this);
   }
   public toJSON() {
     return {
@@ -55,10 +62,11 @@ export class Query extends ASTNode {
 }
 
 export class Exist extends ASTNode {
-  identifier: SymbolPrimitive;
-  patterns: Pattern[];
+  constructor(public identifier: SymbolPrimitive, public patterns: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitExist(this);
+    return visitor.visitExist?.(this);
   }
   public toJSON() {
     return {
@@ -70,9 +78,11 @@ export class Exist extends ASTNode {
 }
 
 export class Not extends ASTNode {
-  expressions: Expression[];
+  constructor(public expressions: Expression[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitNot(this);
+    return visitor.visitNot?.(this);
   }
   public toJSON() {
     return {
@@ -82,11 +92,15 @@ export class Not extends ASTNode {
   }
 }
 export class Findall extends ASTNode {
-  template: Expression;
-  goal: Expression;
-  bag: Expression;
+  constructor(
+    public template: Expression,
+    public goal: Expression,
+    public bag: Expression
+  ) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitFindall(this);
+    return visitor.visitFindall?.(this);
   }
   public toJSON() {
     return {
@@ -98,10 +112,11 @@ export class Findall extends ASTNode {
   }
 }
 export class Forall extends ASTNode {
-  condition: Expression;
-  action: Expression;
+  constructor(public condition: Expression, public action: Expression) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitForall(this);
+    return visitor.visitForall?.(this);
   }
   public toJSON() {
     return {
@@ -113,16 +128,17 @@ export class Forall extends ASTNode {
 }
 
 export class Goal extends ASTNode {
-  identifier: SymbolPrimitive;
-  arguments: Pattern[];
+  constructor(public identifier: SymbolPrimitive, public args: Pattern[]) {
+    super();
+  }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitGoal(this);
+    return visitor.visitGoal?.(this);
   }
   public toJSON() {
     return {
       type: "Goal",
       identifier: this.identifier.toJSON(),
-      arguments: this.arguments.map((arg) => arg.toJSON()),
+      arguments: this.args.map((arg) => arg.toJSON()),
     };
   }
 }
