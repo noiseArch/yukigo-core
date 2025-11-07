@@ -2,16 +2,18 @@ import {
   ASTNode,
   Equation,
   Expression,
+  SourceLocation,
   SymbolPrimitive,
-  Visitor,
 } from "../globals/generics.js";
+import { Visitor } from "../visitor.js";
 
 export class EntryPoint extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public expressions: Expression[]
+    public expressions: Expression[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitEntryPoint?.(this);
@@ -28,9 +30,10 @@ export class EntryPoint extends ASTNode {
 export class Procedure extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public equations: Equation[]
+    public equations: Equation[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitProcedure?.(this);
@@ -47,9 +50,10 @@ export class Procedure extends ASTNode {
 export class Enumeration extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public contents: SymbolPrimitive[]
+    public contents: SymbolPrimitive[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitEnumeration?.(this);
@@ -64,8 +68,12 @@ export class Enumeration extends ASTNode {
 }
 
 export class While extends ASTNode {
-  constructor(public condition: Expression, public body: Expression) {
-    super();
+  constructor(
+    public condition: Expression,
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitWhile?.(this);
@@ -79,8 +87,12 @@ export class While extends ASTNode {
   }
 }
 export class Repeat extends ASTNode {
-  constructor(public count: Expression, public body: Expression) {
-    super();
+  constructor(
+    public count: Expression,
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitRepeat?.(this);
@@ -99,9 +111,10 @@ export class ForLoop extends ASTNode {
     public initialization: Expression,
     public condition: Expression,
     public update: Expression,
-    public body: Expression
+    public body: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitForLoop?.(this);

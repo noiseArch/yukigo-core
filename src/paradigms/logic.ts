@@ -2,10 +2,12 @@ import {
   ASTNode,
   Expression,
   Primitive,
+  PrimitiveValue,
+  SourceLocation,
   SymbolPrimitive,
-  Visitor,
 } from "../globals/generics.js";
 import { Pattern } from "../globals/patterns.js";
+import { Visitor } from "../visitor.js";
 
 export type Clause = Rule | Fact | Query | Primitive;
 
@@ -13,9 +15,10 @@ export class Rule extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
     public patterns: Pattern[],
-    public expressions: Expression[]
+    public expressions: Expression[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitRule?.(this);
@@ -29,10 +32,33 @@ export class Rule extends ASTNode {
     };
   }
 }
+export class Call extends ASTNode {
+  constructor(
+    public callee: SymbolPrimitive,
+    public patterns: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitCall?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "Call",
+      callee: this.callee.toJSON(),
+      patterns: this.patterns.map((p) => p.toJSON()),
+    };
+  }
+}
 
 export class Fact extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public patterns: Pattern[]) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public patterns: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitFact?.(this);
@@ -47,8 +73,8 @@ export class Fact extends ASTNode {
 }
 
 export class Query extends ASTNode {
-  constructor(public expressions: Expression[]) {
-    super();
+  constructor(public expressions: Expression[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitQuery?.(this);
@@ -62,8 +88,12 @@ export class Query extends ASTNode {
 }
 
 export class Exist extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public patterns: Pattern[]) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public patterns: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitExist?.(this);
@@ -78,8 +108,8 @@ export class Exist extends ASTNode {
 }
 
 export class Not extends ASTNode {
-  constructor(public expressions: Expression[]) {
-    super();
+  constructor(public expressions: Expression[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitNot?.(this);
@@ -95,9 +125,10 @@ export class Findall extends ASTNode {
   constructor(
     public template: Expression,
     public goal: Expression,
-    public bag: Expression
+    public bag: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitFindall?.(this);
@@ -112,8 +143,12 @@ export class Findall extends ASTNode {
   }
 }
 export class Forall extends ASTNode {
-  constructor(public condition: Expression, public action: Expression) {
-    super();
+  constructor(
+    public condition: Expression,
+    public action: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitForall?.(this);
@@ -128,8 +163,12 @@ export class Forall extends ASTNode {
 }
 
 export class Goal extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public args: Pattern[]) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public args: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitGoal?.(this);
@@ -141,4 +180,12 @@ export class Goal extends ASTNode {
       arguments: this.args.map((arg) => arg.toJSON()),
     };
   }
+}
+
+// Runtime Types
+
+export interface RuntimeClause {
+  kind: "Clause";
+  identifier: string;
+  equations: (Fact | Rule)[];
 }

@@ -1,7 +1,6 @@
 import {
   Application,
   CompositionExpression,
-  InfixApplicationExpression,
   Lambda,
   Yield,
 } from "../paradigms/functional.js";
@@ -13,17 +12,7 @@ import {
   Repeat,
   While,
 } from "../paradigms/imperative.js";
-import {
-  Clause,
-  Exist,
-  Fact,
-  Findall,
-  Forall,
-  Goal,
-  Not,
-  Query,
-  Rule,
-} from "../paradigms/logic.js";
+import { Clause, Exist, Findall, Forall, Not, RuntimeClause } from "../paradigms/logic.js";
 import {
   Attribute,
   Class,
@@ -36,172 +25,34 @@ import {
   Self,
   Send,
 } from "../paradigms/object.js";
-import {
-  Operator,
-  Operation,
-  ArithmeticUnaryOperation,
-  ArithmeticBinaryOperation,
-  ListUnaryOperation,
-  ListBinaryOperation,
-  ComparisonOperation,
-  LogicalBinaryOperation,
-  LogicalUnaryOperation,
-  BitwiseOperation,
-  StringOperation,
-  UnifyOperation,
-  AssignOperation,
-} from "./operators.js";
-import {
-  ApplicationPattern,
-  AsPattern,
-  ConsPattern,
-  ConstructorPattern,
-  FunctorPattern,
-  InfixApplicationPattern,
-  ListPattern,
-  LiteralPattern,
-  Pattern,
-  TuplePattern,
-  UnionPattern,
-  VariablePattern,
-  WildcardPattern,
-} from "./patterns.js";
-import {
-  ConstrainedType,
-  Constraint,
-  ListType,
-  ParameterizedType,
-  SimpleType,
-  TupleType,
-  Type,
-  TypeAlias,
-  TypeApplication,
-  TypeCast,
-  TypeSignature,
-  TypeVar,
-} from "./types.js";
+import { Visitor } from "../visitor.js";
+import { Operation } from "./operators.js";
+import { Pattern } from "./patterns.js";
+import { LazyList, RuntimeFunction } from "./runtime.js";
+import { Type, TypeAlias, TypeCast, TypeSignature } from "./types.js";
 
 export type Modify<T, R> = Omit<T, keyof R> & R;
 
 // Universal primitive value types
 
-export interface StrictVisitor<TReturn> {
-  visitSequence(node: Sequence): TReturn;
-  // Primitives
-  visitNumberPrimitive(node: NumberPrimitive): TReturn;
-  visitBooleanPrimitive(node: BooleanPrimitive): TReturn;
-  visitStringPrimitive(node: StringPrimitive): TReturn;
-  visitListPrimitive(node: ListPrimitive): TReturn;
-  visitNilPrimitive(node: NilPrimitive): TReturn;
-  visitSymbolPrimitive(node: SymbolPrimitive): TReturn;
-  visitCharPrimitive(node: CharPrimitive): TReturn;
-  // Operations
-  visitArithmeticUnaryOperation(node: ArithmeticUnaryOperation): TReturn;
-  visitArithmeticBinaryOperation(node: ArithmeticBinaryOperation): TReturn;
-  visitListUnaryOperation(node: ListUnaryOperation): TReturn;
-  visitListBinaryOperation(node: ListBinaryOperation): TReturn;
-  visitComparisonOperation(node: ComparisonOperation): TReturn;
-  visitLogicalBinaryOperation(node: LogicalBinaryOperation): TReturn;
-  visitLogicalUnaryOperation(node: LogicalUnaryOperation): TReturn;
-  visitBitwiseOperation(node: BitwiseOperation): TReturn;
-  visitStringOperation(node: StringOperation): TReturn;
-  visitUnifyOperation(node: UnifyOperation): TReturn;
-  visitAssignOperation(node: AssignOperation): TReturn;
-  // Expressions
-  visitExpression(node: Expression): TReturn;
-  visitTupleExpr(node: TupleExpression): TReturn;
-  visitFieldExpr(node: FieldExpression): TReturn;
-  visitDataExpr(node: DataExpression): TReturn;
-  visitConsExpr(node: ConsExpression): TReturn;
-  visitLetInExpr(node: LetInExpression): TReturn;
-  visitOtherwise(node: Otherwise): TReturn;
-  visitCompositionExpression(node: CompositionExpression): TReturn;
-  visitLambda(node: Lambda): TReturn;
-  visitInfixApplicationExpression(node: InfixApplicationExpression): TReturn;
-  visitApplication(node: Application): TReturn;
-  visitExist(node: Exist): TReturn;
-  visitNot(node: Not): TReturn;
-  visitFindall(node: Findall): TReturn;
-  visitForall(node: Forall): TReturn;
-  visitGoal(node: Goal): TReturn;
-  visitSend(node: Send): TReturn;
-  visitNew(node: New): TReturn;
-  visitImplement(node: Implement): TReturn;
-  visitInclude(node: Include): TReturn;
-  visitSelf(node: Self): TReturn;
-  // Statements
-  visitYield(node: Yield): TReturn;
-  visitIf(node: If): TReturn;
-  visitReturn(node: Return): TReturn;
-  visitFunction(node: Function): TReturn;
-  visitField(node: Field): TReturn;
-  visitConstructor(node: Constructor): TReturn;
-  visitRecord(node: Record): TReturn;
-  visitUnguardedBody(node: UnguardedBody): TReturn;
-  visitGuardedBody(node: GuardedBody): TReturn;
-  visitEquation(node: Equation): TReturn;
-  visitSwitch(node: Switch): TReturn;
-  visitTry(node: Try): TReturn;
-  visitRaise(node: Raise): TReturn;
-  visitPrint(node: Print): TReturn;
-  visitFor(node: For): TReturn;
-  visitBreak(node: Break): TReturn;
-  visitContinue(node: Continue): TReturn;
-  visitVariable(node: Variable): TReturn;
-  visitAssignment(node: Assignment): TReturn;
-  visitEntryPoint(node: EntryPoint): TReturn;
-  visitProcedure(node: Procedure): TReturn;
-  visitEnumeration(node: Enumeration): TReturn;
-  visitWhile(node: While): TReturn;
-  visitRepeat(node: Repeat): TReturn;
-  visitForLoop(node: ForLoop): TReturn;
-  visitRule(node: Rule): TReturn;
-  visitFact(node: Fact): TReturn;
-  visitQuery(node: Query): TReturn;
-  visitMethod(node: Method): TReturn;
-  visitAttribute(node: Attribute): TReturn;
-  visitObject(node: Object): TReturn;
-  visitClass(node: Class): TReturn;
-  visitInterface(node: Interface): TReturn;
-  visitInterface(node: Interface): TReturn;
-  // Patterns
-  visitVariablePattern(node: VariablePattern): TReturn;
-  visitLiteralPattern(node: LiteralPattern): TReturn;
-  visitInfixApplicationPattern(node: InfixApplicationPattern): TReturn;
-  visitApplicationPattern(node: ApplicationPattern): TReturn;
-  visitTuplePattern(node: TuplePattern): TReturn;
-  visitListPattern(node: ListPattern): TReturn;
-  visitFunctorPattern(node: FunctorPattern): TReturn;
-  visitAsPattern(node: AsPattern): TReturn;
-  visitWildcardPattern(node: WildcardPattern): TReturn;
-  visitUnionPattern(node: UnionPattern): TReturn;
-  visitConstructorPattern(node: ConstructorPattern): TReturn;
-  visitConsPattern(node: ConsPattern): TReturn;
-  // Type
-  visitSimpleType(node: SimpleType): TReturn;
-  visitTypeVar(node: TypeVar): TReturn;
-  visitTypeApplication(node: TypeApplication): TReturn;
-  visitListType(node: ListType): TReturn;
-  visitTupleType(node: TupleType): TReturn;
-  visitConstraint(node: Constraint): TReturn;
-  visitParameterizedType(node: ParameterizedType): TReturn;
-  visitConstrainedType(node: ConstrainedType): TReturn;
-  visitTypeAlias(node: TypeAlias): TReturn;
-  visitTypeSignature(node: TypeSignature): TReturn;
-  visitTypeCast(node: TypeCast): TReturn;
-  visit(node: ASTNode): TReturn;
-}
-
-export type Visitor<R> = Partial<StrictVisitor<R>>;
-
+/**
+ * Base class for all AST nodes
+ */
 export abstract class ASTNode {
+  public loc?: SourceLocation;
+  constructor(loc?: SourceLocation) {
+    this.loc = loc;
+  }
   abstract accept<R>(visitor: Visitor<R>): R;
   abstract toJSON(): object;
 }
 
+/**
+ * Generic number primitive
+ */
 export class NumberPrimitive extends ASTNode {
-  constructor(public value: number) {
-    super();
+  constructor(public value: number, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitNumberPrimitive?.(this);
@@ -213,9 +64,13 @@ export class NumberPrimitive extends ASTNode {
     };
   }
 }
+
+/**
+ * Generic boolean primitive
+ */
 export class BooleanPrimitive extends ASTNode {
-  constructor(public value: boolean) {
-    super();
+  constructor(public value: boolean, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitBooleanPrimitive?.(this);
@@ -227,9 +82,13 @@ export class BooleanPrimitive extends ASTNode {
     };
   }
 }
+
+/**
+ * Represent lists - generic uniform variable-size collection of elements. Lists typically map to arrays, lists or sequence-like structures.
+ */
 export class ListPrimitive extends ASTNode {
-  constructor(public elements: Expression[]) {
-    super();
+  constructor(public elements: Expression[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitListPrimitive?.(this);
@@ -242,9 +101,12 @@ export class ListPrimitive extends ASTNode {
   }
 }
 
+/**
+ * Generic char primitive
+ */
 export class CharPrimitive extends ASTNode {
-  constructor(public value: string) {
-    super();
+  constructor(public value: string, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitCharPrimitive?.(this);
@@ -256,9 +118,13 @@ export class CharPrimitive extends ASTNode {
     };
   }
 }
+
+/**
+ * Generic string primitive
+ */
 export class StringPrimitive extends ASTNode {
-  constructor(public value: string) {
-    super();
+  constructor(public value: string, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitStringPrimitive?.(this);
@@ -271,9 +137,12 @@ export class StringPrimitive extends ASTNode {
   }
 }
 
+/**
+ * Generic null/undefined primitive
+ */
 export class NilPrimitive extends ASTNode {
-  constructor(public value: undefined | null) {
-    super();
+  constructor(public value: undefined | null, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitNilPrimitive?.(this);
@@ -286,9 +155,12 @@ export class NilPrimitive extends ASTNode {
   }
 }
 
+/**
+ * Generic symbol primitive
+ */
 export class SymbolPrimitive extends ASTNode {
-  constructor(public value: string) {
-    super();
+  constructor(public value: string, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitSymbolPrimitive?.(this);
@@ -317,8 +189,12 @@ export type PrimitiveValue =
   | number
   | boolean
   | string
-  | symbol
+  | RuntimeFunction
+  | RuntimeClause
+  | LazyList
   | null
+  | void
+  | PrimitiveValue[]
   | undefined;
 
 export type Primitive =
@@ -333,22 +209,25 @@ export type Primitive =
 /**
  * Source location information
  */
-export interface SourceLocation {
-  start: Position;
-  end: Position;
-}
-
-export interface Position {
-  line: number;
-  column: number;
-  offset: number;
+export class SourceLocation {
+  constructor(public line: number, public column: number) {}
+  public toJSON() {
+    return {
+      type: "SourceLocation",
+      line: this.line,
+      column: this.column,
+    };
+  }
 }
 
 // Expressions
 
+/**
+ * Represent tuples - generic non-uniform fixed-size collection of elements
+ */
 export class TupleExpression extends ASTNode {
-  constructor(public elements: Expression[]) {
-    super();
+  constructor(public elements: Expression[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTupleExpr?.(this);
@@ -361,9 +240,16 @@ export class TupleExpression extends ASTNode {
   }
 }
 
+/**
+ * Fields of a data expression representations
+ */
 export class FieldExpression extends ASTNode {
-  constructor(public name: SymbolPrimitive, public expression: Expression) {
-    super();
+  constructor(
+    public name: SymbolPrimitive,
+    public expression: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitFieldExpr?.(this);
@@ -377,12 +263,18 @@ export class FieldExpression extends ASTNode {
   }
 }
 
+/**
+ * Data expression, used to construct Records
+ * @example
+ * f = DataName { fieldName = 2 }
+ */
 export class DataExpression extends ASTNode {
   constructor(
     public name: SymbolPrimitive,
-    public contents: FieldExpression[]
+    public contents: FieldExpression[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitDataExpr?.(this);
@@ -395,9 +287,19 @@ export class DataExpression extends ASTNode {
     };
   }
 }
+
+/**
+ * Cons expression, represent a concatenation of a head and a tail
+ * @example
+ * f = x : xs
+ */
 export class ConsExpression extends ASTNode {
-  constructor(public head: Expression, public tail: Expression) {
-    super();
+  constructor(
+    public head: Expression,
+    public tail: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConsExpr?.(this);
@@ -411,9 +313,18 @@ export class ConsExpression extends ASTNode {
   }
 }
 
+/**
+ * Represent let...in expressions normally used in Haskell
+ * @example
+ * f = let x = 2 in x * 4
+ */
 export class LetInExpression extends ASTNode {
-  constructor(public declarations: Expression, public expression: Expression) {
-    super();
+  constructor(
+    public declarations: Sequence,
+    public expression: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLetInExpr?.(this);
@@ -427,6 +338,13 @@ export class LetInExpression extends ASTNode {
   }
 }
 
+/**
+ * Otherwise used as the default case in GuardBody
+ * @example
+ * f x
+ *  | x == 2 = 16
+ *  | otherwise = x * 8
+ */
 export class Otherwise extends ASTNode {
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitOtherwise?.(this);
@@ -434,6 +352,88 @@ export class Otherwise extends ASTNode {
   public toJSON() {
     return {
       type: "Otherwise",
+    };
+  }
+}
+
+/**
+ * ListComprehension when the for expression is a yield.
+ * Scala's for comprehensions, Erlang's and Haskell's list comprehensions
+ * @example
+ * m = [ f x | x <- [1, 2, 3, 4] ]
+ */
+export class ListComprehension extends ASTNode {
+  constructor(
+    public projection: Expression,
+    public generators: (Generator | Expression)[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitListComprehension?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "ListComprehension",
+      projection: this.projection.toJSON(),
+      generators: this.generators.map((gen) => gen.toJSON()),
+    };
+  }
+}
+
+/**
+ * Generator represents patterns like "Just m <- ms" or "x <- [1,2,3]"
+ * @example
+ * x <- [1, 2, 3, 4]
+ */
+export class Generator extends ASTNode {
+  constructor(
+    public variable: SymbolPrimitive,
+    public expression: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitGenerator?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "Generator",
+      variable: this.variable.toJSON(),
+      expression: this.expression.toJSON(),
+    };
+  }
+}
+
+/**
+ * RangeExpression represents when a list is given by comprehension in a defined range
+ * @example
+ * (1..10)
+ * @example
+ * (1, 2..10)
+ * @example
+ * (1..)
+ */
+export class RangeExpression extends ASTNode {
+  constructor(
+    public start: Expression,
+    public end?: Expression, // undefined for infinite ranges like [0..]
+    public step?: Expression, // for [start, second .. end] syntax
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitRangeExpression?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "RangeExpression",
+      start: this.start.toJSON(),
+      end: this.end?.toJSON(),
+      step: this.step?.toJSON(),
     };
   }
 }
@@ -446,6 +446,7 @@ export type Expression =
   | Otherwise
   | ConsExpression
   | Self
+  | Sequence
   | New
   | Include
   | Implement
@@ -453,13 +454,15 @@ export type Expression =
   | DataExpression
   | CompositionExpression
   | Lambda
+  | For
   | Application
-  | InfixApplicationExpression
   | Exist
   | Forall
   | Findall
   | Not
-  | TypeCast;
+  | TypeCast
+  | ListComprehension
+  | RangeExpression;
 
 //export type Expression = {
 //  type: "Expression";
@@ -468,13 +471,20 @@ export type Expression =
 
 // Statements
 
+/**
+ * Generic conditional If statements.
+ * Nested `else if` need to be desugared into `else { if ... }`
+ * @example
+ * if (condition) { ... } else { ... }
+ */
 export class If extends ASTNode {
   constructor(
     public condition: Expression,
     public then: Expression,
-    public elseExpr: Expression
+    public elseExpr: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitIf?.(this);
@@ -489,9 +499,20 @@ export class If extends ASTNode {
   }
 }
 
+/**
+ * Generic return statement.
+ * @example
+ * // In Haskell
+ * f x = x * 2
+ * // The parser takes the body and uses it as a Return
+ * @example
+ * function f(x) {
+ *    return x * 2 // The node holds this expression
+ * }
+ */
 export class Return extends ASTNode {
-  constructor(public body: Expression) {
-    super();
+  constructor(public body: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitReturn?.(this);
@@ -504,9 +525,19 @@ export class Return extends ASTNode {
   }
 }
 
+/**
+ * Generic field in a Record statement.
+ * The name can be undefined to support positional-only Records
+ * @example
+ * ... { name :: String }
+ */
 export class Field extends ASTNode {
-  constructor(public name: SymbolPrimitive | undefined, public value: Type) {
-    super();
+  constructor(
+    public name: SymbolPrimitive | undefined,
+    public value: Type,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitField?.(this);
@@ -520,9 +551,19 @@ export class Field extends ASTNode {
   }
 }
 
+/**
+ * Generic constructor node.
+ * Holds an array of Field nodes.
+ * @example
+ * data Record = Constructor { field :: String }
+ */
 export class Constructor extends ASTNode {
-  constructor(public name: SymbolPrimitive, public fields: Field[]) {
-    super();
+  constructor(
+    public name: SymbolPrimitive,
+    public fields: Field[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConstructor?.(this);
@@ -536,9 +577,20 @@ export class Constructor extends ASTNode {
   }
 }
 
+/**
+ * Generic Record statement node.
+ * @example
+ * data Record = Constructor { field :: String }
+ * data PositionalRecord = Constructor String String
+ */
 export class Record extends ASTNode {
-  constructor(public name: SymbolPrimitive, public contents: Constructor[]) {
-    super();
+  constructor(
+    public name: SymbolPrimitive,
+    public contents: Constructor[],
+    public deriving?: SymbolPrimitive[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitRecord?.(this);
@@ -548,13 +600,25 @@ export class Record extends ASTNode {
       type: "Record",
       name: this.name.toJSON(),
       contents: this.contents.map((constructor) => constructor.toJSON()),
+      deriving: this.deriving?.map((d) => d.toJSON()),
     };
   }
 }
 
+/**
+ * Represents the body of an Equation that does not have guards.
+ * Most languages match the body of its equations to it.
+ * @example
+ * f x = x + 2
+ * // The body is the `x + 2` part
+ * @example
+ * function f(x) {
+ *    return x + 2;
+ * }
+ */
 export class UnguardedBody extends ASTNode {
-  constructor(public sequence: Sequence) {
-    super();
+  constructor(public sequence: Sequence, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitUnguardedBody?.(this);
@@ -567,9 +631,21 @@ export class UnguardedBody extends ASTNode {
   }
 }
 
+/**
+ * Represents the body of an Equation that does have guards.
+ * For example, Haskell's guards
+ * @example
+ * f x
+ *    | x > 2 = x * 2
+ *    | otherwise = x / 2
+ */
 export class GuardedBody extends ASTNode {
-  constructor(public condition: Expression, public body: Expression) {
-    super();
+  constructor(
+    public condition: Expression,
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitGuardedBody?.(this);
@@ -583,13 +659,18 @@ export class GuardedBody extends ASTNode {
   }
 }
 
+/**
+ * Represents one Equation with its arguments and body. Allows for overloading and pattern matching.
+ * You may define the return statement to access it more easily.
+ */
 export class Equation extends ASTNode {
   constructor(
     public patterns: Pattern[],
     public body: UnguardedBody | GuardedBody[],
-    public returnExpr?: Return
+    public returnExpr?: Return,
+    loc?: SourceLocation,
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitEquation?.(this);
@@ -606,12 +687,25 @@ export class Equation extends ASTNode {
   }
 }
 
+/**
+ * Functional / Imperative programming function declaration.
+ * It is is composed by an identifier and one or more equations
+ * @example
+ * int foo (int bar) {
+ *    return bar;
+ * }
+ * @example
+ * def foo(bar):
+ *    return bar
+ *
+ */
 export class Function extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public equations: Equation[]
+    public equations: Equation[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitFunction?.(this);
@@ -625,18 +719,33 @@ export class Function extends ASTNode {
   }
 }
 
-export type Case = {
-  condition: Expression;
-  body: Expression;
-};
-
+export class Case extends ASTNode {
+  constructor(
+    public condition: Pattern,
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitCase?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "Case",
+      condition: this.condition.toJSON(),
+      body: this.body.toJSON(),
+    };
+  }
+}
 export class Switch extends ASTNode {
   constructor(
     public value: Expression,
     public cases: Case[],
-    public defaultExpr: Expression
+    public defaultExpr?: Expression,
+    loc?: SourceLocation,
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitSwitch?.(this);
@@ -654,18 +763,33 @@ export class Switch extends ASTNode {
   }
 }
 
-export type Catch = {
-  patterns: Pattern[];
-  body: Expression;
-};
-
+export class Catch extends ASTNode {
+  constructor(
+    public patterns: Pattern[],
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitCatch?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "Catch",
+      patterns: this.patterns.map((pat) => pat.toJSON()),
+      body: this.body.toJSON(),
+    };
+  }
+}
 export class Try extends ASTNode {
   constructor(
     public body: Expression,
     public catchExpr: Catch[],
-    public finallyExpr: Expression
+    public finallyExpr: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTry?.(this);
@@ -684,8 +808,8 @@ export class Try extends ASTNode {
 }
 
 export class Raise extends ASTNode {
-  constructor(public body: Expression) {
-    super();
+  constructor(public body: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitRaise?.(this);
@@ -699,8 +823,8 @@ export class Raise extends ASTNode {
 }
 
 export class Print extends ASTNode {
-  constructor(public expression: Expression) {
-    super();
+  constructor(public expression: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitPrint?.(this);
@@ -714,8 +838,12 @@ export class Print extends ASTNode {
 }
 
 export class For extends ASTNode {
-  constructor(public body: Expression, public statements: Statement[]) {
-    super();
+  constructor(
+    public body: Expression,
+    public statements: Statement[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitFor?.(this);
@@ -729,8 +857,8 @@ export class For extends ASTNode {
   }
 }
 export class Break extends ASTNode {
-  constructor(public body: Expression) {
-    super();
+  constructor(public body: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitBreak?.(this);
@@ -743,8 +871,8 @@ export class Break extends ASTNode {
   }
 }
 export class Continue extends ASTNode {
-  constructor(public body: Expression) {
-    super();
+  constructor(public body: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitContinue?.(this);
@@ -761,9 +889,10 @@ export class Variable extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
     public expression: Expression,
-    public variableType?: Type
+    public variableType?: Type,
+    loc?: SourceLocation,
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitVariable?.(this);
@@ -781,9 +910,10 @@ export class Variable extends ASTNode {
 export class Assignment extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public expression: Expression
+    public expression: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitAssignment?.(this);
@@ -798,8 +928,8 @@ export class Assignment extends ASTNode {
 }
 
 export class Sequence extends ASTNode {
-  constructor(public statements: Statement[]) {
-    super();
+  constructor(public statements: Statement[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitSequence?.(this);

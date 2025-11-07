@@ -2,16 +2,18 @@ import {
   ASTNode,
   Equation,
   Expression,
+  SourceLocation,
   SymbolPrimitive,
-  Visitor,
 } from "../globals/generics.js";
+import { Visitor } from "../visitor.js";
 
 export class Method extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public equations: Equation[]
+    public equations: Equation[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitMethod?.(this);
@@ -28,9 +30,10 @@ export class Method extends ASTNode {
 export class Attribute extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public expression: Expression
+    public expression: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitAttribute?.(this);
@@ -47,9 +50,10 @@ export class Attribute extends ASTNode {
 export class Object extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
-    public expression: Expression
+    public expression: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitObject?.(this);
@@ -68,9 +72,10 @@ export class Class extends ASTNode {
     public identifier: SymbolPrimitive,
     public extendsSymbol: SymbolPrimitive | undefined,
     public implementsNode: Implement | undefined,
-    public expression: Expression
+    public expression: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitClass?.(this);
@@ -90,9 +95,10 @@ export class Interface extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
     public extendsSymbol: SymbolPrimitive[],
-    public expression: Expression
+    public expression: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitInterface?.(this);
@@ -111,9 +117,10 @@ export class Send extends ASTNode {
   constructor(
     public receiver: Expression,
     public selector: Expression,
-    public args: Expression[]
+    public args: Expression[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitSend?.(this);
@@ -129,8 +136,12 @@ export class Send extends ASTNode {
 }
 
 export class New extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public args: Expression[]) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public args: Expression[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitNew?.(this);
@@ -145,8 +156,8 @@ export class New extends ASTNode {
 }
 
 export class Implement extends ASTNode {
-  constructor(public identifier: SymbolPrimitive) {
-    super();
+  constructor(public identifier: SymbolPrimitive, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitImplement?.(this);
@@ -160,8 +171,8 @@ export class Implement extends ASTNode {
 }
 
 export class Include extends ASTNode {
-  constructor(public identifier: SymbolPrimitive) {
-    super();
+  constructor(public identifier: SymbolPrimitive, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitInclude?.(this);

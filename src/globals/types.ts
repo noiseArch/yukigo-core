@@ -1,4 +1,10 @@
-import { ASTNode, Expression, SymbolPrimitive, Visitor } from "./generics.js";
+import { Visitor } from "../visitor.js";
+import {
+  ASTNode,
+  Expression,
+  SourceLocation,
+  SymbolPrimitive,
+} from "./generics.js";
 
 export type Type =
   | SimpleType
@@ -10,8 +16,12 @@ export type Type =
   | ConstrainedType;
 
 export class SimpleType extends ASTNode {
-  constructor(public value: string, public constraints: Constraint[]) {
-    super();
+  constructor(
+    public value: string,
+    public constraints: Constraint[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitSimpleType?.(this);
@@ -25,8 +35,12 @@ export class SimpleType extends ASTNode {
   }
 }
 export class TypeVar extends ASTNode {
-  constructor(public value: string, public constraints: Constraint[]) {
-    super();
+  constructor(
+    public value: string,
+    public constraints: Constraint[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTypeVar?.(this);
@@ -40,8 +54,12 @@ export class TypeVar extends ASTNode {
   }
 }
 export class TypeApplication extends ASTNode {
-  constructor(public functionType: Type, public argument: Type) {
-    super();
+  constructor(
+    public functionType: Type,
+    public argument: Type,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTypeApplication?.(this);
@@ -55,8 +73,12 @@ export class TypeApplication extends ASTNode {
   }
 }
 export class ListType extends ASTNode {
-  constructor(public values: Type, public constraints: Constraint[]) {
-    super();
+  constructor(
+    public values: Type,
+    public constraints: Constraint[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitListType?.(this);
@@ -70,8 +92,12 @@ export class ListType extends ASTNode {
   }
 }
 export class TupleType extends ASTNode {
-  constructor(public values: Type[], public constraints: Constraint[]) {
-    super();
+  constructor(
+    public values: Type[],
+    public constraints: Constraint[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTupleType?.(this);
@@ -86,8 +112,12 @@ export class TupleType extends ASTNode {
 }
 
 export class Constraint extends ASTNode {
-  constructor(public name: string, public parameters: Type[]) {
-    super();
+  constructor(
+    public name: string,
+    public parameters: Type[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConstraint?.(this);
@@ -105,9 +135,10 @@ export class ParameterizedType extends ASTNode {
   constructor(
     public inputs: Type[],
     public returnType: Type,
-    public constraints: Constraint[]
+    public constraints: Constraint[],
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitParameterizedType?.(this);
@@ -122,8 +153,8 @@ export class ParameterizedType extends ASTNode {
   }
 }
 export class ConstrainedType extends ASTNode {
-  constructor(public constraints: Constraint[]) {
-    super();
+  constructor(public constraints: Constraint[], loc?: SourceLocation) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConstrainedType?.(this);
@@ -140,9 +171,10 @@ export class TypeAlias extends ASTNode {
   constructor(
     public identifier: SymbolPrimitive,
     public variables: string[],
-    public value: Type
+    public value: Type,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTypeAlias?.(this);
@@ -158,8 +190,12 @@ export class TypeAlias extends ASTNode {
 }
 
 export class TypeSignature extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public body: Type) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public body: Type,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTypeSignature?.(this);
@@ -173,8 +209,12 @@ export class TypeSignature extends ASTNode {
   }
 }
 export class TypeCast extends ASTNode {
-  constructor(public expression: Expression, public body: Type) {
-    super();
+  constructor(
+    public expression: Expression,
+    public body: Type,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTypeCast?.(this);

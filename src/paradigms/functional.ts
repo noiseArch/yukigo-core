@@ -1,14 +1,19 @@
 import {
   ASTNode,
   Expression,
+  SourceLocation,
   SymbolPrimitive,
-  Visitor,
 } from "../globals/generics.js";
 import { Pattern } from "../globals/patterns.js";
+import { Visitor } from "../visitor.js";
 
 export class CompositionExpression extends ASTNode {
-  constructor(public left: Expression, public right: Expression) {
-    super();
+  constructor(
+    public left: Expression,
+    public right: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitCompositionExpression?.(this);
@@ -23,8 +28,12 @@ export class CompositionExpression extends ASTNode {
 }
 
 export class Lambda extends ASTNode {
-  constructor(public parameters: Pattern[], public body: Expression) {
-    super();
+  constructor(
+    public parameters: Pattern[],
+    public body: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLambda?.(this);
@@ -38,8 +47,8 @@ export class Lambda extends ASTNode {
   }
 }
 export class Yield extends ASTNode {
-  constructor(public expression: Expression) {
-    super();
+  constructor(public expression: Expression, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitYield?.(this);
@@ -52,30 +61,13 @@ export class Yield extends ASTNode {
   }
 }
 
-export class InfixApplicationExpression extends ASTNode {
-  constructor(
-    public operator: SymbolPrimitive,
-    public left: Expression,
-    public right: Expression
-  ) {
-    super();
-  }
-  public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInfixApplicationExpression?.(this);
-  }
-  public toJSON() {
-    return {
-      type: "InfixApplication",
-      operator: this.operator.toJSON(),
-      left: this.left.toJSON(),
-      right: this.right.toJSON(),
-    };
-  }
-}
-
 export class Application extends ASTNode {
-  constructor(public functionExpr: Expression, public parameter: Expression) {
-    super();
+  constructor(
+    public functionExpr: Expression,
+    public parameter: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitApplication?.(this);

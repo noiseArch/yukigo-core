@@ -1,4 +1,5 @@
-import { ASTNode, Expression, Visitor } from "./generics.js";
+import { Visitor } from "../visitor.js";
+import { ASTNode, Expression, SourceLocation } from "./generics.js";
 
 export type ArithmeticBinaryOperator =
   | "Plus"
@@ -14,6 +15,7 @@ export type ArithmeticUnaryOperator =
   | "Absolute"
   | "Ceil"
   | "Floor"
+  | "Negation"
   | "Sqrt";
 
 export type ComparisonOperatorType =
@@ -31,17 +33,19 @@ export type ComparisonOperatorType =
 export type LogicalBinaryOperator = "And" | "Or";
 export type LogicalUnaryOperator = "Negation";
 
-export type BitwiseOperatorType =
+export type BitwiseBinaryOperator =
   | "BitwiseOr"
   | "BitwiseAnd"
   | "BitwiseLeftShift"
   | "BitwiseRightShift"
-  | "BitwiseNot"
   | "BitwiseUnsignedRightShift"
   | "BitwiseXor";
 
+export type BitwiseUnaryOperator = "BitwiseNot";
+
 export type ListBinaryOperator =
   | "Push"
+  | "Concat"
   | "Inject"
   | "Gather"
   | "Collect"
@@ -49,16 +53,12 @@ export type ListBinaryOperator =
   | "AnySatisfy"
   | "Select"
   | "Detect"
+  | "GetAt"
+  | "Count"
+  | "Slice"
   | "SetAt";
 
-export type ListUnaryOperator =
-  | "Size"
-  | "DetectMax"
-  | "DetectMin"
-  | "Count"
-  | "GetAt"
-  | "Slice"
-  | "Flatten";
+export type ListUnaryOperator = "Size" | "DetectMax" | "DetectMin" | "Flatten";
 
 export type UnifyOperator = "Unify";
 
@@ -75,11 +75,11 @@ export type BinaryOperator =
   | ArithmeticBinaryOperator
   | ComparisonOperatorType
   | LogicalBinaryOperator
-  | BitwiseOperatorType
+  | BitwiseBinaryOperator
+  | BitwiseUnaryOperator
   | AssignOperator
   | UnifyOperator
   | StringBinaryOperator
-  | BitwiseOperatorType
   | ListBinaryOperator;
 
 export type Operator = UnaryOperator | BinaryOperator;
@@ -87,9 +87,10 @@ export type Operator = UnaryOperator | BinaryOperator;
 export class ArithmeticUnaryOperation extends ASTNode {
   constructor(
     public operator: ArithmeticUnaryOperator,
-    public operand: Expression
+    public operand: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitArithmeticUnaryOperation?.(this);
@@ -107,9 +108,10 @@ export class ArithmeticBinaryOperation extends ASTNode {
   constructor(
     public operator: ArithmeticBinaryOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitArithmeticBinaryOperation?.(this);
@@ -124,8 +126,12 @@ export class ArithmeticBinaryOperation extends ASTNode {
   }
 }
 export class ListUnaryOperation extends ASTNode {
-  constructor(public operator: ListUnaryOperator, public operand: Expression) {
-    super();
+  constructor(
+    public operator: ListUnaryOperator,
+    public operand: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitListUnaryOperation?.(this);
@@ -143,9 +149,10 @@ export class ListBinaryOperation extends ASTNode {
   constructor(
     public operator: ListBinaryOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitListBinaryOperation?.(this);
@@ -164,9 +171,10 @@ export class ComparisonOperation extends ASTNode {
   constructor(
     public operator: ComparisonOperatorType,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitComparisonOperation?.(this);
@@ -185,9 +193,10 @@ export class LogicalBinaryOperation extends ASTNode {
   constructor(
     public operator: LogicalBinaryOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLogicalBinaryOperation?.(this);
@@ -204,9 +213,10 @@ export class LogicalBinaryOperation extends ASTNode {
 export class LogicalUnaryOperation extends ASTNode {
   constructor(
     public operator: LogicalUnaryOperator,
-    public operand: Expression
+    public operand: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLogicalUnaryOperation?.(this);
@@ -220,23 +230,43 @@ export class LogicalUnaryOperation extends ASTNode {
   }
 }
 
-export class BitwiseOperation extends ASTNode {
+export class BitwiseBinaryOperation extends ASTNode {
   constructor(
-    public operator: BitwiseOperatorType,
+    public operator: BitwiseBinaryOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitBitwiseOperation?.(this);
+    return visitor.visitBitwiseBinaryOperation?.(this);
   }
   public toJSON() {
     return {
-      type: "BitwiseOperation",
+      type: "BitwiseBinaryOperation",
       operator: this.operator,
       left: this.left,
       right: this.right,
+    };
+  }
+}
+export class BitwiseUnaryOperation extends ASTNode {
+  constructor(
+    public operator: BitwiseUnaryOperator,
+    public operand: Expression,
+    loc?: SourceLocation
+  ) {
+    super(loc);
+  }
+  public accept<R>(visitor: Visitor<R>): R {
+    return visitor.visitBitwiseUnaryOperation?.(this);
+  }
+  public toJSON() {
+    return {
+      type: "BitwiseUnaryOperation",
+      operator: this.operator,
+      operand: this.operand,
     };
   }
 }
@@ -245,9 +275,10 @@ export class StringOperation extends ASTNode {
   constructor(
     public operator: StringBinaryOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitStringOperation?.(this);
@@ -266,9 +297,10 @@ export class UnifyOperation extends ASTNode {
   constructor(
     public operator: UnifyOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitUnifyOperation?.(this);
@@ -287,9 +319,10 @@ export class AssignOperation extends ASTNode {
   constructor(
     public operator: AssignOperator,
     public left: Expression,
-    public right: Expression
+    public right: Expression,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitAssignOperation?.(this);
@@ -304,15 +337,20 @@ export class AssignOperation extends ASTNode {
   }
 }
 
-export type Operation =
+export type BinaryOperation =
   | ArithmeticBinaryOperation
-  | ArithmeticUnaryOperation
   | StringOperation
   | ListBinaryOperation
-  | ListUnaryOperation
-  | ComparisonOperation
   | LogicalBinaryOperation
-  | LogicalUnaryOperation
+  | ComparisonOperation
   | UnifyOperation
   | AssignOperation
-  | BitwiseOperation;
+  | BitwiseBinaryOperation;
+
+export type UnaryOperation =
+  | ArithmeticUnaryOperation
+  | ListUnaryOperation
+  | LogicalUnaryOperation
+  | BitwiseUnaryOperation;
+
+export type Operation = BinaryOperation | UnaryOperation;

@@ -11,6 +11,12 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
+  "typedocOptions": {
+    "entryPoints": [
+      "src/*.ts"
+    ],
+    "out": "docs/typedoc"
+  },
   "include": ["src"],
   "exclude": ["dist/**/*"]
 }

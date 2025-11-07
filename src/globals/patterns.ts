@@ -1,17 +1,14 @@
+import { Visitor } from "../visitor.js";
 import {
   ASTNode,
-  BooleanPrimitive,
-  CharPrimitive,
-  NumberPrimitive,
   Primitive,
-  StringPrimitive,
+  SourceLocation,
   SymbolPrimitive,
-  Visitor,
 } from "./generics.js";
 
 export class VariablePattern extends ASTNode {
-  constructor(public name: SymbolPrimitive) {
-    super();
+  constructor(public name: SymbolPrimitive, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitVariablePattern?.(this);
@@ -25,8 +22,8 @@ export class VariablePattern extends ASTNode {
 }
 
 export class LiteralPattern extends ASTNode {
-  constructor(public name: Primitive) {
-    super();
+  constructor(public name: Primitive, loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitLiteralPattern?.(this);
@@ -38,29 +35,13 @@ export class LiteralPattern extends ASTNode {
     };
   }
 }
-export class InfixApplicationPattern extends ASTNode {
-  constructor(
-    public left: Pattern,
-    public cons: string,
-    public right: Pattern
-  ) {
-    super();
-  }
-  public accept<R>(visitor: Visitor<R>): R {
-    return visitor.visitInfixApplicationPattern?.(this);
-  }
-  public toJSON() {
-    return {
-      type: "InfixApplicationPattern",
-      cons: this.cons,
-      left: this.left.toJSON(),
-      right: this.right.toJSON(),
-    };
-  }
-}
 export class ApplicationPattern extends ASTNode {
-  constructor(public symbol: SymbolPrimitive, public args: Pattern[]) {
-    super();
+  constructor(
+    public symbol: SymbolPrimitive,
+    public args: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitApplicationPattern?.(this);
@@ -75,8 +56,8 @@ export class ApplicationPattern extends ASTNode {
 }
 
 export class TuplePattern extends ASTNode {
-  constructor(public elements: Pattern[]) {
-    super();
+  constructor(public elements: Pattern[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitTuplePattern?.(this);
@@ -90,8 +71,8 @@ export class TuplePattern extends ASTNode {
 }
 
 export class ListPattern extends ASTNode {
-  constructor(public elements: Pattern[]) {
-    super();
+  constructor(public elements: Pattern[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitListPattern?.(this);
@@ -105,8 +86,12 @@ export class ListPattern extends ASTNode {
 }
 
 export class FunctorPattern extends ASTNode {
-  constructor(public identifier: SymbolPrimitive, public args: Pattern[]) {
-    super();
+  constructor(
+    public identifier: SymbolPrimitive,
+    public args: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
 
   public accept<R>(visitor: Visitor<R>): R {
@@ -124,9 +109,10 @@ export class FunctorPattern extends ASTNode {
 export class AsPattern extends ASTNode {
   constructor(
     public alias: VariablePattern | WildcardPattern,
-    public pattern: Pattern
+    public pattern: Pattern,
+    loc?: SourceLocation
   ) {
-    super();
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitAsPattern?.(this);
@@ -153,8 +139,8 @@ export class WildcardPattern extends ASTNode {
 }
 
 export class UnionPattern extends ASTNode {
-  constructor(public patterns: Pattern[]) {
-    super();
+  constructor(public patterns: Pattern[], loc?: SourceLocation) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitUnionPattern?.(this);
@@ -168,8 +154,12 @@ export class UnionPattern extends ASTNode {
 }
 
 export class ConstructorPattern extends ASTNode {
-  constructor(public constr: string, public patterns: Pattern[]) {
-    super();
+  constructor(
+    public constr: string,
+    public patterns: Pattern[],
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConstructorPattern?.(this);
@@ -184,8 +174,12 @@ export class ConstructorPattern extends ASTNode {
 }
 
 export class ConsPattern extends ASTNode {
-  constructor(public head: Pattern, public tail: Pattern) {
-    super();
+  constructor(
+    public head: Pattern,
+    public tail: Pattern,
+    loc?: SourceLocation
+  ) {
+    super(loc);
   }
   public accept<R>(visitor: Visitor<R>): R {
     return visitor.visitConsPattern?.(this);
@@ -202,7 +196,6 @@ export class ConsPattern extends ASTNode {
 export type Pattern =
   | VariablePattern
   | LiteralPattern
-  | InfixApplicationPattern
   | ApplicationPattern
   | TuplePattern
   | ListPattern
